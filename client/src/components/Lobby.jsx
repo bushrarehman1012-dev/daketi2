@@ -87,11 +87,18 @@ function ThiefLogo() {
       {/* ── RIGHT ARM — money bag ── */}
       <path d="M176 151 L210 208 L198 222 L162 163Z" fill="#D4AF37"/>
       <path d="M176 151 L210 208 L198 222 L162 163Z" fill="url(#tlHS)"/>
-      {/* Money bag */}
-      <circle cx="212" cy="230" r="22" fill="#C8A020" stroke="#9a7008" strokeWidth="1.5"/>
-      <path d="M198 210 Q212 200 226 210" stroke="#8a6008" strokeWidth="6" strokeLinecap="round" fill="none"/>
-      <path d="M199 222 Q212 231 225 222" stroke="rgba(255,255,255,0.18)" strokeWidth="2" fill="none"/>
-      <text x="212" y="237" textAnchor="middle" fontSize="17" fontWeight="900" fill="#050d1e" fontFamily="Georgia,serif">$</text>
+      {/* Money SACK — bulging bag with tied neck, not a ball */}
+      {/* Sack body — wide bottom, narrowing at the neck */}
+      <path d="M196 222 Q190 248 200 260 Q212 268 224 260 Q234 248 228 222 Q220 216 212 215 Q204 216 196 222Z"
+            fill="#C8A020" stroke="#9a7008" strokeWidth="1.5"/>
+      {/* Sack tie / neck — pinched section */}
+      <path d="M204 218 Q212 214 220 218 Q218 222 212 223 Q206 222 204 218Z" fill="#8a6008"/>
+      {/* Knot bump */}
+      <ellipse cx="212" cy="214" rx="7" ry="5" fill="#a07810"/>
+      {/* Sack highlight */}
+      <path d="M200 232 Q196 244 202 254" stroke="rgba(255,255,255,0.18)" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+      {/* $ sign */}
+      <text x="212" y="248" textAnchor="middle" fontSize="16" fontWeight="900" fill="#050d1e" fontFamily="Georgia,serif">$</text>
     </svg>
   );
 }
