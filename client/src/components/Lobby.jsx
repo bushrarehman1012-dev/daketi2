@@ -10,6 +10,12 @@ function ThiefLogo() {
           <rect width="200" height="6" fill="transparent"/>
           <rect y="6" width="200" height="6" fill="rgba(7,13,32,0.56)"/>
         </pattern>
+        {/* Money bag shading — dark on right side, light on left */}
+        <radialGradient id="bagShade" cx="65%" cy="40%" r="60%">
+          <stop offset="0%"   stopColor="rgba(255,200,80,0.18)"/>
+          <stop offset="60%"  stopColor="rgba(0,0,0,0)"/>
+          <stop offset="100%" stopColor="rgba(0,0,0,0.35)"/>
+        </radialGradient>
       </defs>
 
       {/* Soft halo glow */}
@@ -87,18 +93,37 @@ function ThiefLogo() {
       {/* ── RIGHT ARM — money bag ── */}
       <path d="M176 151 L210 208 L198 222 L162 163Z" fill="#D4AF37"/>
       <path d="M176 151 L210 208 L198 222 L162 163Z" fill="url(#tlHS)"/>
-      {/* Money SACK — bulging bag with tied neck, not a ball */}
-      {/* Sack body — wide bottom, narrowing at the neck */}
-      <path d="M196 222 Q190 248 200 260 Q212 268 224 260 Q234 248 228 222 Q220 216 212 215 Q204 216 196 222Z"
-            fill="#C8A020" stroke="#9a7008" strokeWidth="1.5"/>
-      {/* Sack tie / neck — pinched section */}
-      <path d="M204 218 Q212 214 220 218 Q218 222 212 223 Q206 222 204 218Z" fill="#8a6008"/>
-      {/* Knot bump */}
-      <ellipse cx="212" cy="214" rx="7" ry="5" fill="#a07810"/>
-      {/* Sack highlight */}
-      <path d="M200 232 Q196 244 202 254" stroke="rgba(255,255,255,0.18)" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
-      {/* $ sign */}
-      <text x="212" y="248" textAnchor="middle" fontSize="16" fontWeight="900" fill="#050d1e" fontFamily="Georgia,serif">$</text>
+
+      {/* ── MONEY SACK ─────────────────────────────────────────────────────── */}
+      {/* Main bag body — large round sack */}
+      <ellipse cx="212" cy="256" rx="27" ry="25" fill="#C8901A"/>
+      {/* Shading layer on bag right side */}
+      <ellipse cx="212" cy="256" rx="27" ry="25" fill="url(#bagShade)" opacity=".5"/>
+      {/* Bag body outline */}
+      <ellipse cx="212" cy="256" rx="27" ry="25" fill="none" stroke="#7a5800" strokeWidth="1.5"/>
+
+      {/* Neck cinch — gathered fabric above the round body */}
+      <path d="M200 232 Q212 226 224 232 L226 242 Q212 247 198 242Z" fill="#a06e10"/>
+      <path d="M200 232 Q212 228 224 232" stroke="#c8900a" strokeWidth="1" fill="none" opacity=".6"/>
+
+      {/* Tied top — bunched fabric */}
+      <path d="M204 219 Q212 211 220 219 Q222 228 212 231 Q202 228 204 219Z" fill="#8a5c08"/>
+      {/* Fabric folds */}
+      <path d="M206 220 Q210 215 214 220" stroke="#c8900a" strokeWidth="1.2" fill="none" strokeLinecap="round" opacity=".5"/>
+      <path d="M208 224 Q212 220 216 224" stroke="#c8900a" strokeWidth="1" fill="none" strokeLinecap="round" opacity=".4"/>
+
+      {/* Knot at the very top */}
+      <ellipse cx="212" cy="215" rx="8" ry="6" fill="#b07810"/>
+      <ellipse cx="210" cy="214" rx="3" ry="2.5" fill="#d4af37" opacity=".35"/>
+
+      {/* $ coin emblem on bag body */}
+      <circle cx="212" cy="256" r="14" fill="#d4a010" stroke="#7a5800" strokeWidth="1.5"/>
+      <circle cx="212" cy="256" r="11" fill="none" stroke="#e8c030" strokeWidth=".8" opacity=".6"/>
+      <text x="212" y="261" textAnchor="middle" fontSize="14" fontWeight="900" fill="#3a1a00" fontFamily="Georgia,serif">$</text>
+
+      {/* Highlight — left side of bag catches light */}
+      <path d="M192 244 Q188 256 192 268" stroke="rgba(255,255,255,0.2)" strokeWidth="4" fill="none" strokeLinecap="round"/>
+      <ellipse cx="200" cy="247" rx="5" ry="7" fill="rgba(255,255,255,0.1)"/>
     </svg>
   );
 }

@@ -92,21 +92,32 @@ const PIP_POS = {
   '10': [[27,10],[73,10],[50,26],[27,38],[73,38],[27,62],[73,62],[50,74],[27,90],[73,90]],
 };
 
-function CardCenter({ rank, suit }) {
+function CardPips({ rank, suit, small = false }) {
   const sym  = SUIT[suit];
   const pips = PIP_POS[rank];
 
-  if (!pips) return (
-    <div className="hc-face">
-      <span className="hc-face-initial">{rank}</span>
-      <span className="hc-face-sym">{sym}</span>
-    </div>
-  );
+  if (!pips) {
+    if (small) return (
+      <div className="tc-face-center">
+        <span style={{ fontFamily:'Georgia,serif', fontSize:'12px', fontWeight:900, lineHeight:1 }}>{rank}</span>
+        <span style={{ fontSize:'9px', lineHeight:1 }}>{sym}</span>
+      </div>
+    );
+    return (
+      <div className="hc-face">
+        <span className="hc-face-initial">{rank}</span>
+        <span className="hc-face-sym">{sym}</span>
+      </div>
+    );
+  }
 
   const n  = pips.length;
-  const fs = n <= 1 ? 22 : n <= 4 ? 16 : n <= 6 ? 14 : 12;
+  const fs = small
+    ? (n <= 1 ? 14 : n <= 4 ? 11 : 8)
+    : (n <= 1 ? 24 : n <= 4 ? 18 : n <= 6 ? 15 : 13);
+
   return (
-    <div className="hc-pips">
+    <div className={small ? 'tc-pips' : 'hc-pips'}>
       {pips.map(([x, y], i) => (
         <span key={i} className="hc-pip" style={{
           left: `${x}%`, top: `${y}%`, fontSize: `${fs}px`,
@@ -128,7 +139,7 @@ function HandCard({ card, selected, canPlay, isNew, onClick }) {
       title={`${card.rank} of ${card.suit}`}
     >
       <div className="hc-corner hc-tl"><span className="hc-rank">{card.rank}</span><span className="hc-suit">{SUIT[card.suit]}</span></div>
-      <CardCenter rank={card.rank} suit={card.suit} />
+      <CardPips rank={card.rank} suit={card.suit} />
       <div className="hc-corner hc-br"><span className="hc-rank">{card.rank}</span><span className="hc-suit">{SUIT[card.suit]}</span></div>
     </div>
   );
@@ -142,8 +153,9 @@ function TableCard({ card, faceDown, glow, pulsing, locked, onClick }) {
       className={['tc', RED.has(card.suit)?'tc-r':'tc-b', glow?'tc-glow':'', pulsing?'tc-pulse':'', locked?'tc-locked':''].filter(Boolean).join(' ')}
       onClick={onClick}
     >
-      <span className="tc-rank">{card.rank}</span>
-      <span className="tc-suit">{SUIT[card.suit]}</span>
+      <div className="tc-corner tc-tl"><span className="tc-rank">{card.rank}</span><span className="tc-suit-sm">{SUIT[card.suit]}</span></div>
+      <CardPips rank={card.rank} suit={card.suit} small />
+      <div className="tc-corner tc-br"><span className="tc-rank">{card.rank}</span><span className="tc-suit-sm">{SUIT[card.suit]}</span></div>
       {locked && <span className="tc-lock-badge">🔒</span>}
     </div>
   );

@@ -409,7 +409,7 @@ body {
 .hc-suit { font-size: 10px; line-height: 1; }
 
 /* Pip layout */
-.hc-pips { position: absolute; top: 20px; bottom: 20px; left: 4px; right: 4px; pointer-events: none; }
+.hc-pips { position: absolute; top: 22px; bottom: 22px; left: 3px; right: 3px; pointer-events: none; }
 .hc-pip  { position: absolute; line-height: 1; display: inline-block; }
 
 /* Face cards (J Q K) */
@@ -430,10 +430,9 @@ body {
   background: linear-gradient(165deg, #FFFFF8, #FFF4D0);
   border: 1px solid #C0A050;
   box-shadow: 0 2px 7px rgba(0,0,0,.4);
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 1px; flex-shrink: 0;
+  display: block; flex-shrink: 0;
   transition: transform .15s, box-shadow .15s;
+  overflow: hidden;
 }
 .tc-r { color: var(--red); }
 .tc-b { color: #111; }
@@ -458,8 +457,16 @@ body {
   0%,100% { box-shadow: 0 0 0 2px var(--gold), 0 0 10px rgba(212,175,55,.5); }
   50%      { box-shadow: 0 0 0 3px var(--gold-lt), 0 0 18px rgba(212,175,55,.9); }
 }
-.tc-rank { font-family: 'Georgia', serif; font-size: 14px; font-weight: 800; line-height: 1; }
-.tc-suit { font-size: 12px; line-height: 1; }
+.tc-corner { position: absolute; display: flex; flex-direction: column; align-items: center; line-height: 1; }
+.tc-tl { top: 2px; left: 3px; }
+.tc-br { bottom: 2px; right: 3px; transform: rotate(180deg); }
+.tc-rank    { font-family: 'Georgia', serif; font-size: 11px; font-weight: 800; line-height: 1; }
+.tc-suit-sm { font-size: 8px; line-height: 1; }
+.tc-pips { position: absolute; top: 13px; bottom: 13px; left: 2px; right: 2px; pointer-events: none; }
+.tc-face-center {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 1px; pointer-events: none;
+}
 .tc-badge {
   position: absolute; top: -6px; right: -7px;
   background: var(--royal); color: #fff;
