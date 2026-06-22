@@ -123,8 +123,8 @@ body {
   from { box-shadow: 0 0 8px rgba(38,85,204,.5); }
   to   { box-shadow: 0 0 18px rgba(38,85,204,.9), 0 0 0 2px var(--royal-lt); }
 }
-/* Voice buttons — always 3, idle state when voice not active */
-.vbtn--off   { opacity: 0.22; pointer-events: none; cursor: default; }
+/* Voice buttons — idle state dimmed but MIC stays clickable to join */
+.vbtn--off   { opacity: 0.28; cursor: pointer; }
 .vbtn--leave { color: #ff9090; }
 
 /* ── Floating game toasts — overlay, zero layout impact ── */
@@ -180,17 +180,16 @@ body {
   gap: .45rem; padding: .75rem 1.4rem;
 }
 
-/* ── Hero card image — compact for single-page fit ── */
+/* ── Hero card image — no CSS border; artwork has its own ornate gold border ── */
 .lobby-hero-wrap { display: flex; justify-content: center; }
 .lobby-hero-card {
-  width: clamp(80px, 22vw, 120px);
+  width: clamp(100px, 26vw, 140px);
   height: auto; display: block;
-  border-radius: 10px;
-  border: 2.5px solid rgba(212,175,55,.75);
+  border-radius: 8px;
+  border: none;
   box-shadow:
-    0 0 0 1.5px rgba(212,175,55,.2),
-    0 6px 22px rgba(0,0,0,.85),
-    0 0 22px rgba(212,175,55,.3);
+    0 8px 32px rgba(0,0,0,.9),
+    0 0 32px rgba(212,175,55,.22);
 }
 
 /* ── Brand text ── */
@@ -592,16 +591,20 @@ body {
   flex-shrink: 0;
 }
 
-/* Turn pill */
+/* Turn pill — styled like the PRIMARY/GHOST button design elements */
 .turn-pill {
-  padding: .28rem .75rem; border-radius: 99px;
-  background: rgba(255,255,255,.06); border: 1px solid var(--border);
+  padding: .28rem .85rem; border-radius: 99px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.1);
   font-size: var(--fs-xs); font-weight: var(--fw-semi); color: var(--text-dim);
-  white-space: nowrap;
+  white-space: nowrap; letter-spacing: .04em;
 }
 .turn-pill--mine {
-  background: rgba(212,175,55,.12); border-color: rgba(212,175,55,.4);
-  color: var(--gold); animation: pillpulse 1.4s infinite;
+  background: linear-gradient(135deg, rgba(212,175,55,.18), rgba(180,130,20,.12));
+  border-color: rgba(212,175,55,.5);
+  color: var(--gold);
+  box-shadow: 0 0 10px rgba(212,175,55,.15), inset 0 1px 0 rgba(255,255,255,.1);
+  animation: pillpulse 1.4s infinite;
 }
 @keyframes pillpulse { 0%,100% { opacity:1 } 50% { opacity:.7 } }
 
@@ -640,10 +643,10 @@ body {
 .score-name { font-size: .65rem; font-weight: var(--fw-semi); color: var(--text-dim); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .score-val  { font-size: .7rem; font-weight: var(--fw-bold); color: var(--gold); font-family: 'Cinzel', serif; flex-shrink: 0; }
 
-/* ── Endgame banner — fixed overlay, never shifts the game layout ── */
+/* ── Endgame banner — fixed overlay at top, below header, never shifts layout ── */
 .endgame-banner {
   position: fixed;
-  bottom: 68px; left: 50%; transform: translateX(-50%);
+  top: 48px; left: 50%; transform: translateX(-50%);
   z-index: 650;
   background: linear-gradient(90deg, rgba(100,40,0,.95), rgba(70,25,0,.9), rgba(100,40,0,.95));
   border: 1px solid rgba(212,120,30,.7);
@@ -669,11 +672,17 @@ body {
 .g-opps { display: flex; gap: .45rem; flex-wrap: wrap; flex-shrink: 0; }
 
 .opp {
-  background: rgba(12,21,48,.8); border: 1px solid var(--border);
+  background: linear-gradient(160deg, rgba(14,26,60,.85), rgba(8,14,36,.9));
+  border: 1px solid rgba(212,175,55,.15);
+  border-top: 1px solid rgba(212,175,55,.28); /* gold top accent */
   border-radius: 12px; padding: .45rem .6rem; flex: 1; min-width: 120px;
   display: flex; flex-direction: column; gap: .3rem;
+  box-shadow: inset 0 1px 0 rgba(212,175,55,.05);
 }
-.opp--active { border-color: rgba(212,175,55,.5); box-shadow: 0 0 12px rgba(212,175,55,.12); }
+.opp--active {
+  border-color: rgba(212,175,55,.45);
+  box-shadow: 0 0 14px rgba(212,175,55,.14), inset 0 1px 0 rgba(212,175,55,.08);
+}
 
 .opp-head { display: flex; align-items: center; gap: .4rem; }
 .opp-av {
@@ -686,10 +695,14 @@ body {
 .opp-nm {
   font-size: var(--fs-sm); font-weight: var(--fw-semi); display: flex; align-items: center; gap: .3rem; flex-wrap: wrap;
 }
+/* Score inline badge — styled like the crown coin design element */
 .opp-score-inline {
   font-family: 'Cinzel', serif; font-size: var(--fs-xs); font-weight: var(--fw-black);
-  color: var(--gold); background: rgba(212,175,55,.12); border: 1px solid rgba(212,175,55,.3);
-  border-radius: 5px; padding: 0 .35rem; line-height: 1.5; flex-shrink: 0;
+  color: #1a0e00;
+  background: linear-gradient(135deg, #D4AF37, #a87c10);
+  border: 1px solid rgba(212,175,55,.6);
+  border-radius: 99px; padding: 0 .45rem; line-height: 1.6; flex-shrink: 0;
+  box-shadow: 0 1px 4px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.25);
 }
 .live-dot {
   display: inline-block; width: 6px; height: 6px; border-radius: 50%;
@@ -806,7 +819,13 @@ body {
 
 .felt-row { display: flex; gap: 1.2rem; align-items: flex-start; justify-content: center; flex-wrap: nowrap; position: relative; z-index: 1; }
 .felt-col { display: flex; flex-direction: column; align-items: center; gap: .3rem; flex-shrink: 1; min-width: 0; }
-.felt-lbl { font-size: var(--fs-2xs); color: rgba(255,255,255,.3); text-transform: uppercase; letter-spacing: .1em; }
+/* Felt section labels — styled like the ribbon banner design element */
+.felt-lbl {
+  font-size: var(--fs-2xs); text-transform: uppercase; letter-spacing: .12em;
+  color: rgba(212,175,55,.55);
+  font-family: 'Cinzel', serif; font-weight: var(--fw-semi);
+  text-shadow: 0 0 8px rgba(212,175,55,.25);
+}
 .felt-div { width: 1px; height: 60px; background: rgba(255,255,255,.1); align-self: center; flex-shrink: 0; }
 .felt-empty { font-size: var(--fs-xs); color: rgba(255,255,255,.22); font-style: italic; }
 
@@ -825,33 +844,31 @@ body {
 /* Deck zone — fixed height so it never shifts */
 .deck-zone { position: relative; display: flex; align-items: center; min-height: 96px; flex-shrink: 0; }
 
-/* ── Deck card — image fills card directly, no nested frame ── */
+/* ── Deck card wrapper — allows count badge to render outside the clipped card ── */
+.deck-card-wrap {
+  position: relative; flex-shrink: 0;
+}
+/* ── Deck card — no CSS border; artwork has its own ornate gold border ── */
 .deck-card {
-  position: relative;
   width: 62px; height: 94px;
-  border: 2px solid var(--gold);
   border-radius: 8px;
-  overflow: visible;
+  overflow: hidden; /* clips image to rounded corners */
+  border: none;
   box-shadow:
-    0 0 0 1px rgba(212,175,55,.3),
-    0 0 20px rgba(212,175,55,.32),
-    0 4px 16px rgba(0,0,0,.7);
+    0 0 18px rgba(212,175,55,.28),
+    0 4px 18px rgba(0,0,0,.75);
   cursor: default;
   transition: box-shadow .25s;
-  flex-shrink: 0;
 }
 .deck-card:hover {
   box-shadow:
-    0 0 0 1px rgba(212,175,55,.55),
-    0 0 28px rgba(212,175,55,.5),
-    0 4px 16px rgba(0,0,0,.7);
+    0 0 28px rgba(212,175,55,.48),
+    0 4px 18px rgba(0,0,0,.75);
 }
 .deck-thief-img {
-  position: absolute; inset: 0;
+  display: block;
   width: 100%; height: 100%;
   object-fit: cover;
-  border-radius: 6px;
-  display: block;
 }
 .deck-count {
   position: absolute; bottom: -8px; right: -9px;
@@ -911,10 +928,18 @@ body {
   filter: drop-shadow(0 0 8px rgba(50,120,220,.8)) drop-shadow(0 0 5px rgba(40,180,80,.5));
 }
 
-.st-sz { font-size: var(--fs-sm); color: var(--gold); font-weight: var(--fw-bold); }
+/* Stack count — styled like the pennant flag design element */
+.st-sz {
+  font-size: var(--fs-sm); font-weight: var(--fw-bold);
+  font-family: 'Cinzel', serif;
+  background: linear-gradient(135deg, #D4AF37, #a87c10);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
 .st-action-tag {
-  font-size: .55rem; font-weight: var(--fw-black); color: #7ab0ff;
+  font-size: .55rem; font-weight: var(--fw-black); color: #90c0ff;
   letter-spacing: .06em; text-transform: uppercase;
+  text-shadow: 0 0 8px rgba(80,160,255,.5);
 }
 .st-safe-tag {
   font-size: .65rem; line-height: 1;
@@ -940,21 +965,31 @@ body {
   padding-bottom: 18px; /* room for lifted-card shadow */
 }
 
-/* Drop */
+/* Drop — styled like the action button design element (ATTACK style) */
 .drop-zone { display: flex; align-items: center; gap: .75rem; }
 .btn-drop {
-  padding: .44rem 1.3rem;
-  background: rgba(60,8,8,.8); border: 1px solid rgba(100,20,20,.4);
-  color: #ffaaaa; border-radius: 8px;
-  font-size: var(--fs-sm); font-weight: var(--fw-semi);
-  cursor: not-allowed; opacity: .38; transition: all .15s;
+  padding: .44rem 1.4rem;
+  background: rgba(50,6,6,.8);
+  border: 1px solid rgba(80,15,15,.5);
+  border-bottom: 2px solid rgba(60,10,10,.8);
+  color: rgba(255,160,160,.4); border-radius: 99px;
+  font-size: var(--fs-sm); font-weight: var(--fw-bold);
+  font-family: 'Cinzel', serif; letter-spacing: .06em;
+  cursor: not-allowed; opacity: .38; transition: all .18s;
 }
 .btn-drop--ready {
   cursor: pointer; opacity: 1;
-  background: rgba(130,15,15,.9); border-color: rgba(190,35,35,.6);
-  box-shadow: 0 3px 14px rgba(160,0,0,.4);
+  background: linear-gradient(135deg, #8b1010, #5a0808);
+  border-color: rgba(220,50,50,.6);
+  border-bottom-color: rgba(100,10,10,.9);
+  color: #ffbbbb;
+  box-shadow: 0 3px 16px rgba(160,0,0,.45), inset 0 1px 0 rgba(255,100,100,.15);
 }
-.btn-drop--ready:hover { background: rgba(170,20,20,.95); transform: translateY(-1px); }
+.btn-drop--ready:hover {
+  background: linear-gradient(135deg, #a81818, #6e0a0a);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 22px rgba(180,0,0,.55), inset 0 1px 0 rgba(255,100,100,.2);
+}
 .drop-tip { font-size: var(--fs-xs); color: var(--text-xs); font-style: italic; }
 
 /* ═══════════════════════════════════════

@@ -26,11 +26,13 @@ function CardBack({ withThief = false }) {
   );
 }
 
-// ── Deck card — thief image fills card directly, no nested frame ─────────────
+// ── Deck card — image fills card; wrapper allows count badge outside overflow ─
 function DeckCard({ count }) {
   return (
-    <div className="deck-card">
-      <img src="/card-back-hero.jpg" className="deck-thief-img" alt="Deck" />
+    <div className="deck-card-wrap">
+      <div className="deck-card">
+        <img src="/card-back-hero.jpg" className="deck-thief-img" alt="Deck" />
+      </div>
       <div className="deck-count">{count}</div>
     </div>
   );
@@ -494,7 +496,6 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
                           'Stolen!'
                         )}
                       >
-                        {steal && <span className="steal-cta">STEAL!</span>}
                         <div className="opp-topcard-inner">
                           <TableCard
                             card={p.lastSlotTop.topCard}
@@ -505,6 +506,7 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
                             {p.lastSlotTop.locked ? '🔒' : ''}×{p.lastSlotTop.size}
                           </span>
                         </div>
+                        {steal && <span className="steal-cta">STEAL!</span>}
                       </div>
                     )}
                   </div>
