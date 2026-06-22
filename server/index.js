@@ -4,7 +4,11 @@ const { Server } = require('socket.io');
 const cors     = require('cors');
 const fs       = require('fs');
 const path     = require('path');
+const jwt      = require('jsonwebtoken');
 const GameRoom = require('./game/GameRoom');
+const { router: authRouter, JWT_SECRET } = require('./routes/auth');
+const socialRouter = require('./routes/social');
+const { users, games } = require('./db');
 
 const app    = express();
 const server = http.createServer(app);
@@ -15,11 +19,16 @@ const io     = new Server(server, {
 });
 
 app.use(cors());
+app.use(express.json());
 app.get('/health', (_, res) => res.json({ ok: true }));
+app.use('/api/auth',    authRouter);
+app.use('/api/friends', socialRouter);
+app.use('/api/history', socialRouter);
 
 const rooms        = new Map();
-const onlineUsers  = new Map(); // socketId → { name }
-const reconnectBuf = new Map(); // socketId → { roomId, name, timer }
+const onlineUsers  = new Map(); // socketId → { name, userId? }
+const reconnectBuf = new Map(); // socketId → { roomId, name, userId?, timer }
+const roomGames    = new Map(); // roomId → gameId (active DB game record)
 
 // Timeout constants — all in milliseconds, easy to tune
 const RECONNECT_MS    = 3 * 60 * 1000;  // 3 min — grace window before treating disconnect as a leave
@@ -97,8 +106,23 @@ function broadcast(room) {
 
 // ── Socket handlers ───────────────────────────────────────────────────────
 
+// Optionally decode JWT from socket handshake auth — socket.data.userId set if valid
+io.use((socket, next) => {
+  const token = socket.handshake.auth?.token;
+  if (token) {
+    try {
+      const payload = jwt.verify(token, JWT_SECRET);
+      socket.data.userId = payload.sub;
+    } catch { /* guest — no userId */ }
+  }
+  next();
+});
+
 io.on('connection', socket => {
-  console.log('connect', socket.id);
+  console.log('connect', socket.id, socket.data.userId ? `(user ${socket.data.userId})` : '(guest)');
+
+  // Update lastSeenAt for authenticated users
+  if (socket.data.userId) users.touch(socket.data.userId);
 
   // Send current online users to the newly connected socket
   socket.emit('online_users', [...onlineUsers.entries()].map(([sid, u]) => ({ socketId: sid, name: u.name })));
@@ -123,7 +147,7 @@ io.on('connection', socket => {
     socket.data.displayName = buf.name || name;
     socket.join(buf.roomId);
 
-    if (name) onlineUsers.set(socket.id, { name });
+    if (name) onlineUsers.set(socket.id, { name, userId: socket.data.userId });
     broadcastOnlineUsers();
     room.lastActivity = Date.now();
     broadcast(room);
@@ -134,7 +158,7 @@ io.on('connection', socket => {
 
   socket.on('register_online', ({ name }) => {
     if (!name?.trim()) return;
-    onlineUsers.set(socket.id, { name: name.trim() });
+    onlineUsers.set(socket.id, { name: name.trim(), userId: socket.data.userId });
     broadcastOnlineUsers();
   });
 
@@ -166,6 +190,7 @@ io.on('connection', socket => {
       room.addPlayer(socket.id, (name || '').trim() || 'Player');
       socket.join(code);
       socket.data.roomId = code;
+      socket.data.displayName = (name || '').trim() || 'Player';
       cb({ ok: true, roomId: code, state: room.getStateFor(socket.id) });
     } catch (e) { cb({ ok: false, error: e.message }); }
   });
@@ -187,6 +212,11 @@ io.on('connection', socket => {
       const room = rooms.get(socket.data.roomId);
       if (!room) throw new Error('Not in a room');
       room.startGame(socket.id);
+      // Create a DB game record so we can save history at finish
+      try {
+        const g = games.create(room.id);
+        roomGames.set(room.id, g.id);
+      } catch (_) {}
       broadcast(room);
       cb({ ok: true });
     } catch (e) { cb({ ok: false, error: e.message }); }
@@ -204,6 +234,24 @@ io.on('connection', socket => {
       if (room.phase === 'finished') {
         const hallOfFame = recordGameScores(room.players);
         io.to(room.id).emit('highscores', hallOfFame);
+        // Persist game result to DB (for history)
+        try {
+          const gameId = roomGames.get(room.id);
+          if (gameId) {
+            const sorted = [...room.players].sort((a, b) => b.currentScore - a.currentScore);
+            const participants = sorted.map((p, i) => {
+              const online = onlineUsers.get(p.id);
+              return {
+                userId:    online?.userId || null,
+                guestName: p.name,
+                score:     p.currentScore,
+                place:     i + 1,
+              };
+            });
+            games.finish(gameId, participants);
+            roomGames.delete(room.id);
+          }
+        } catch (e) { console.error('game history save error', e); }
       }
 
       cb({ ok: true });

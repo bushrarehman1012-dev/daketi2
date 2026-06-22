@@ -2,14 +2,25 @@ import { io } from 'socket.io-client';
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL ?? '';
 
-const socket = io(SERVER_URL, { autoConnect: false });
+// JWT token is read from localStorage at connect time so the server can link
+// this socket to the authenticated user account.
+function getToken() {
+  return localStorage.getItem('daketi_token') || undefined;
+}
+
+const socket = io(SERVER_URL, {
+  autoConnect: false,
+  auth: { token: getToken() },
+});
 
 let _lastId = null;
 
 socket.on('connect', () => {
+  // Refresh the auth token each reconnect in case user logged in/out
+  socket.auth = { token: getToken() };
+
   const name = localStorage.getItem('daketi_name') || '';
   if (_lastId && _lastId !== socket.id) {
-    // New socket ID → tell server to restore our room slot
     socket.emit('reconnect_player', { prevSocketId: _lastId, name });
   }
   _lastId = socket.id;
@@ -26,9 +37,9 @@ if (typeof document !== 'undefined') {
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) return;
     if (!socket.connected) {
+      socket.auth = { token: getToken() };
       socket.connect();
     } else if (_lastId && _lastId !== socket.id) {
-      // Already reconnected with a new ID but connect event may not have fired
       const name = localStorage.getItem('daketi_name') || '';
       socket.emit('reconnect_player', { prevSocketId: _lastId, name });
       _lastId = socket.id;

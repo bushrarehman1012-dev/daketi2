@@ -20,23 +20,21 @@ function DeckCard({ count }) {
 }
 
 // ── Standard playing card pip positions ──────────────────────────────────────
-// [x%, y%] within the pip area. Symmetric: each pip above 50% has a mirror
-// below 50%. Pips at y > 50 are rotated 180° (standard card convention).
+// [x%, y%] within .hc-pips / .tc-pips container.
+// All y-values stay within 14-86% so pips never overflow the container
+// (the container already has top/bottom padding that clears the corner labels).
+// Pips at y > 50 are rotated 180° (standard card convention).
 const PIP_POS = {
   'A':  [[50,50]],
-  '2':  [[50,18],[50,82]],
-  '3':  [[50,12],[50,50],[50,88]],
-  '4':  [[27,20],[73,20],[27,80],[73,80]],
-  '5':  [[27,20],[73,20],[50,50],[27,80],[73,80]],
-  '6':  [[27,18],[73,18],[27,50],[73,50],[27,82],[73,82]],
-  // 7: 6-layout + 1 upper-center pip (7 is intentionally asymmetric)
-  '7':  [[27,15],[73,15],[50,33],[27,53],[73,53],[27,78],[73,78]],
-  // 8: 7-layout mirrored — adds lower-center pip to make it symmetric
-  '8':  [[27,13],[73,13],[50,30],[27,50],[73,50],[50,70],[27,87],[73,87]],
-  // 9: 4 corner-pairs + 1 center
-  '9':  [[27,12],[73,12],[27,34],[73,34],[50,50],[27,66],[73,66],[27,88],[73,88]],
-  // 10: 3 row-pairs + upper & lower center pips
-  '10': [[27,10],[73,10],[50,26],[27,38],[73,38],[27,62],[73,62],[50,74],[27,90],[73,90]],
+  '2':  [[50,19],[50,81]],
+  '3':  [[50,15],[50,50],[50,85]],
+  '4':  [[28,22],[72,22],[28,78],[72,78]],
+  '5':  [[28,22],[72,22],[50,50],[28,78],[72,78]],
+  '6':  [[28,19],[72,19],[28,50],[72,50],[28,81],[72,81]],
+  '7':  [[28,17],[72,17],[50,34],[28,55],[72,55],[28,77],[72,77]],
+  '8':  [[28,15],[72,15],[50,32],[28,50],[72,50],[50,68],[28,85],[72,85]],
+  '9':  [[28,14],[72,14],[28,36],[72,36],[50,50],[28,64],[72,64],[28,86],[72,86]],
+  '10': [[28,14],[72,14],[50,29],[28,43],[72,43],[28,57],[72,57],[50,71],[28,86],[72,86]],
 };
 
 // Portrait illustration for top-half of a face card (fits in 56 × 25 SVG units)
@@ -187,16 +185,22 @@ function CardPips({ rank, suit, small = false }) {
   // Face card (J / Q / K) — no pip positions defined
   if (!pips) return <FaceCard rank={rank} suit={suit} small={small} />;
 
-  const n  = pips.length;
-  const fs = small
-    ? (n <= 1 ? 18 : n <= 4 ? 11 : 8)
-    : (n <= 1 ? 36 : n <= 4 ? 18 : n <= 6 ? 15 : 13);  // Ace gets large 36px pip
+  const n = pips.length;
+
+  // All sizes in em — scaled by font-size on the container (.hc-pips or .tc-pips).
+  // Desktop: .hc-pips font-size=16px, .tc-pips font-size=10px
+  // Mobile:  .hc-pips font-size=12px, .tc-pips font-size=8px (overridden in CSS)
+  const fs = n <= 1 ? '2.1em'    // Ace — large single pip
+           : n <= 4 ? '1.1em'    // 2-4
+           : n <= 6 ? '.95em'    // 5-6
+           : n <= 8 ? '.80em'    // 7-8
+           :          '.70em';   // 9-10 — packed layout
 
   return (
     <div className={small ? 'tc-pips' : 'hc-pips'}>
       {pips.map(([x, y], i) => (
         <span key={i} className="hc-pip" style={{
-          left: `${x}%`, top: `${y}%`, fontSize: `${fs}px`,
+          left: `${x}%`, top: `${y}%`, fontSize: fs,
           transform: `translate(-50%,-50%)${y > 50 ? ' rotate(180deg)' : ''}`,
         }}>{sym}</span>
       ))}

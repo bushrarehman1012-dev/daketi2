@@ -1,15 +1,33 @@
 import { useEffect, useState } from 'react';
 import socket from './socket.js';
-import Lobby from './components/Lobby.jsx';
-import Game  from './components/Game.jsx';
+import { useAuth } from './context/AuthContext.jsx';
+import AuthPage    from './components/AuthPage.jsx';
+import Lobby       from './components/Lobby.jsx';
+import Game        from './components/Game.jsx';
+import ProfileModal from './components/ProfileModal.jsx';
 
 export default function App() {
-  const [state,       setState]       = useState(null);
-  const [myId,        setMyId]        = useState(null);
-  const [chatMsgs,    setChatMsgs]    = useState([]);
-  const [highscores,  setHighscores]  = useState([]);
-  const [onlineUsers, setOnlineUsers] = useState([]);
-  const [invite,      setInvite]      = useState(null); // { fromSocketId, fromName, roomId }
+  const { user, loading, getToken } = useAuth();
+  const [asGuest,      setAsGuest]      = useState(false);
+  const [showProfile,  setShowProfile]  = useState(false);
+  const [state,        setState]        = useState(null);
+  const [myId,         setMyId]         = useState(null);
+  const [chatMsgs,     setChatMsgs]     = useState([]);
+  const [highscores,   setHighscores]   = useState([]);
+  const [onlineUsers,  setOnlineUsers]  = useState([]);
+  const [invite,       setInvite]       = useState(null);
+
+  // When the user logs in, pass the JWT to the socket so the server can link
+  // this connection to their account.
+  useEffect(() => {
+    if (!loading) {
+      const token = getToken();
+      if (token && !socket.connected) {
+        socket.auth = { token };
+        socket.connect();
+      }
+    }
+  }, [loading, user]);
 
   useEffect(() => {
     socket.on('connect',      () => setMyId(socket.id));
@@ -18,10 +36,7 @@ export default function App() {
     socket.on('highscores',   hs => setHighscores(hs));
     socket.on('online_users', u  => setOnlineUsers(u));
     socket.on('room_invite',  inv => setInvite(inv));
-    socket.on('invite_declined', ({ byName }) => {
-      // brief flash — could show a toast; for now just log
-      console.log(`${byName} declined your invite`);
-    });
+    socket.on('invite_declined', ({ byName }) => console.log(`${byName} declined your invite`));
     return () => {
       socket.off('connect');
       socket.off('game_state');
@@ -52,7 +67,8 @@ export default function App() {
   function acceptInvite(inv) {
     setInvite(null);
     if (!socket.connected) socket.connect();
-    socket.emit('join_room', { roomId: inv.roomId, name: localStorage.getItem('daketi_name') || 'Player' }, res => {
+    const name = user?.displayName || localStorage.getItem('daketi_name') || 'Player';
+    socket.emit('join_room', { roomId: inv.roomId, name }, res => {
       if (res.ok) handleJoined(res.state);
     });
   }
@@ -62,7 +78,21 @@ export default function App() {
     setInvite(null);
   }
 
-  // ── Invite incoming toast (shown on any screen) ───────────────────────────
+  // ── Loading spinner (verifying stored JWT) ────────────────────────────────
+  if (loading) {
+    return (
+      <div style={{ height: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="auth-spinner" />
+      </div>
+    );
+  }
+
+  // ── Show auth page when not logged in and not continuing as guest ─────────
+  if (!user && !asGuest) {
+    return <AuthPage onContinueAsGuest={() => setAsGuest(true)} />;
+  }
+
+  // ── Invite toast (shown on any screen after auth) ─────────────────────────
   const inviteToast = invite && (
     <div className="invite-toast">
       <div className="invite-toast-inner">
@@ -78,11 +108,17 @@ export default function App() {
     </div>
   );
 
-  // ── Abandoned game (opponent left mid-game) ───────────────────────────────
+  // ── Profile modal ─────────────────────────────────────────────────────────
+  const profileModal = showProfile && user && (
+    <ProfileModal onClose={() => setShowProfile(false)} />
+  );
+
+  // ── Abandoned game ────────────────────────────────────────────────────────
   if (state?.phase === 'abandoned') {
     return (
       <>
         {inviteToast}
+        {profileModal}
         <div className="lobby">
           <div className="lobby-card" style={{ textAlign: 'center', gap: '1.2rem' }}>
             <div style={{ fontSize: '2.5rem' }}>😔</div>
@@ -108,6 +144,7 @@ export default function App() {
     return (
       <>
         {inviteToast}
+        {profileModal}
         <div className="lobby">
           <div className="lobby-card">
             <div className="lobby-room-code">{state.roomId}</div>
@@ -122,7 +159,6 @@ export default function App() {
               ))}
             </ul>
 
-            {/* Online users not yet in this room */}
             {inviteable.length > 0 && (
               <div className="wr-online">
                 <div className="wr-online-lbl">Online now</div>
@@ -130,10 +166,7 @@ export default function App() {
                   <div key={u.socketId} className="wr-online-row">
                     <span className="lp-avatar" style={{ width: 24, height: 24, fontSize: '.65rem' }}>{u.name[0]?.toUpperCase()}</span>
                     <span className="wr-online-name">{u.name}</span>
-                    <button
-                      className="invite-pill"
-                      onClick={() => socket.emit('invite_to_room', { targetSocketId: u.socketId, roomId: state.roomId })}
-                    >
+                    <button className="invite-pill" onClick={() => socket.emit('invite_to_room', { targetSocketId: u.socketId, roomId: state.roomId })}>
                       Invite
                     </button>
                   </div>
@@ -151,7 +184,6 @@ export default function App() {
                 </button>
               : <p className="lobby-wait">Waiting for host to start…</p>
             }
-
             <button className="btn-leave" onClick={leaveRoom}>← Leave Room</button>
           </div>
         </div>
@@ -164,20 +196,30 @@ export default function App() {
     return (
       <>
         {inviteToast}
+        {profileModal}
         <Game
           state={state} myId={myId}
           chatMessages={chatMsgs} highscores={highscores}
           onLeave={leaveRoom}
+          user={user}
+          onOpenProfile={() => setShowProfile(true)}
         />
       </>
     );
   }
 
-  // ── Landing (Lobby) ───────────────────────────────────────────────────────
+  // ── Landing lobby ─────────────────────────────────────────────────────────
   return (
     <>
       {inviteToast}
-      <Lobby onJoined={handleJoined} onlineUsers={onlineUsers} mySocketId={myId} />
+      {profileModal}
+      <Lobby
+        onJoined={handleJoined}
+        onlineUsers={onlineUsers}
+        mySocketId={myId}
+        user={user}
+        onOpenProfile={() => setShowProfile(true)}
+      />
     </>
   );
 }

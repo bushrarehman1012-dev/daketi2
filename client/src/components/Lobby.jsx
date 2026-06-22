@@ -5,8 +5,9 @@ function ThiefLogo() {
   return <img src="/thief.png" className="thief-img" alt="Daketi Thief" />;
 }
 
-export default function Lobby({ onJoined, onlineUsers = [], mySocketId }) {
-  const [name,  setName]  = useState(() => localStorage.getItem('daketi_name') || '');
+export default function Lobby({ onJoined, onlineUsers = [], mySocketId, user, onOpenProfile }) {
+  // Logged-in users get their display name pre-filled and locked
+  const [name,  setName]  = useState(() => user?.displayName || localStorage.getItem('daketi_name') || '');
   const [code,  setCode]  = useState('');
   const [err,   setErr]   = useState('');
   const [busy,  setBusy]  = useState(false);
@@ -76,16 +77,27 @@ export default function Lobby({ onJoined, onlineUsers = [], mySocketId }) {
             <h1 className="lobby-wordmark">DAKETI</h1>
             <p className="lobby-tagline">The Art of the Steal</p>
           </div>
+          {user && (
+            <button className="lobby-profile-btn" onClick={onOpenProfile}>
+              <span className="lobby-profile-av">{(user.displayName?.[0] || '?').toUpperCase()}</span>
+              <span>{user.displayName}</span>
+              <span className="lobby-profile-caret">▾</span>
+            </button>
+          )}
         </div>
 
         {/* ── Card / Form ── */}
         <div className="lobby-form-card">
-          {/* Name always shown */}
+          {/* Name — locked if logged in (comes from account) */}
           <div className="lf-field">
             <label className="lf-label">Your Name</label>
-            <input className="lf-input" placeholder="Enter your name…" maxLength={20}
-              value={name} onChange={handleNameChange}
-              onKeyDown={e => e.key === 'Enter' && (tab === 'create' ? create() : join())} />
+            {user ? (
+              <div className="lf-input lf-input--locked">{user.displayName}</div>
+            ) : (
+              <input className="lf-input" placeholder="Enter your name…" maxLength={20}
+                value={name} onChange={handleNameChange}
+                onKeyDown={e => e.key === 'Enter' && (tab === 'create' ? create() : join())} />
+            )}
           </div>
 
           {/* Tabs */}
