@@ -555,7 +555,7 @@ body {
 /* ── Thief deck card ── */
 .deck-card {
   position: relative;
-  width: 58px; height: 84px;
+  width: 72px; height: 84px;
   background: linear-gradient(160deg, #0d1d58 0%, #070d20 100%);
   border: 1.5px solid var(--gold);
   border-radius: 8px;
@@ -575,7 +575,7 @@ body {
     0 4px 14px rgba(0,0,0,.6);
 }
 .deck-thief {
-  width: 52px; height: 66px;
+  width: 68px; height: 52px;
   filter: drop-shadow(0 1px 3px rgba(0,0,0,.5));
 }
 .deck-count {
@@ -634,7 +634,7 @@ body {
   filter: drop-shadow(0 0 8px rgba(50,120,220,.8)) drop-shadow(0 0 5px rgba(40,180,80,.5));
 }
 
-.st-sz { font-size: var(--fs-2xs); color: var(--text-dim); font-weight: var(--fw-semi); }
+.st-sz { font-size: var(--fs-sm); color: var(--gold); font-weight: var(--fw-bold); }
 .st-action-tag {
   font-size: .55rem; font-weight: var(--fw-black); color: #7ab0ff;
   letter-spacing: .06em; text-transform: uppercase;

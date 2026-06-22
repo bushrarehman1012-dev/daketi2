@@ -10,44 +10,61 @@ const RED  = new Set(['hearts', 'diamonds']);
 // ── Deck card with thief logo ─────────────────────────────────────────────────
 
 function DeckCard({ count }) {
-  // Miniature of the same crouching-thief-with-sack silhouette
-  const G = '#D4AF37';
   return (
     <div className="deck-card">
-      <svg className="deck-thief" viewBox="0 0 88 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Front-facing thief bust — same character as the lobby logo, cropped to head+hat+coat top */}
+      <svg className="deck-thief" viewBox="8 0 224 170" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <pattern id="dcHS" width="88" height="7" patternUnits="userSpaceOnUse">
-            <rect width="88" height="3.5" fill="transparent"/>
-            <rect y="3.5" width="88" height="3.5" fill="rgba(7,13,32,0.72)"/>
+          <pattern id="dcHS" width="200" height="12" patternUnits="userSpaceOnUse">
+            <rect width="200" height="6" fill="transparent"/>
+            <rect y="6" width="200" height="6" fill="rgba(7,13,32,0.56)"/>
           </pattern>
         </defs>
-        <g fill={G}>
-          {/* Sack */}
-          <ellipse cx="64" cy="42" rx="24" ry="22"/>
-          {/* Sack tie + knot */}
-          <ellipse cx="50" cy="22" rx="6" ry="4" transform="rotate(-20 50 22)"/>
-          <circle cx="49" cy="17" r="4"/>
-          {/* Head */}
-          <circle cx="20" cy="20" r="11"/>
-          {/* Beanie dome */}
-          <path d="M9 22 Q9 4 20 2 Q31 4 31 22 Q25 18 20 17 Q15 18 9 22Z"/>
-          {/* Neck + torso (crouched) */}
-          <ellipse cx="28" cy="30" rx="5" ry="9" transform="rotate(60 28 30)"/>
-          <ellipse cx="33" cy="44" rx="11" ry="20" transform="rotate(22 33 44)"/>
-          {/* Arm gripping sack */}
-          <ellipse cx="45" cy="30" rx="6" ry="15" transform="rotate(-55 45 30)"/>
-          <circle cx="51" cy="25" r="6"/>
-          {/* Hip */}
-          <circle cx="30" cy="59" r="9"/>
-          {/* Front leg */}
-          <ellipse cx="23" cy="64" rx="7" ry="13" transform="rotate(25 23 64)"/>
-          <ellipse cx="14" cy="75" rx="5" ry="9" transform="rotate(-12 14 75)"/>
-          {/* Back leg */}
-          <ellipse cx="36" cy="65" rx="6" ry="11" transform="rotate(-18 36 65)"/>
+        {/* TOP HAT */}
+        <ellipse cx="120" cy="57" rx="56" ry="10" fill="#D4AF37"/>
+        <path d="M76 57 L80 8 L160 8 L164 57Z" fill="#D4AF37"/>
+        <path d="M142 10 L164 57 L155 57 L135 10Z" fill="rgba(0,0,0,0.1)"/>
+        <rect x="79" y="46" width="82" height="10" rx="2" fill="#070d20"/>
+        <rect x="80" y="49" width="80" height="3.5" rx="1.5" fill="#D4AF37" opacity=".28"/>
+        {/* HEAD */}
+        <circle cx="120" cy="99" r="36" fill="#D4AF37"/>
+        {/* DOMINO MASK */}
+        <path d="M84 92 Q120 82 156 92 L154 104 Q120 114 86 104Z" fill="#070d20"/>
+        <ellipse cx="103" cy="97" rx="10" ry="7.5" fill="#D4AF37"/>
+        <ellipse cx="137" cy="97" rx="10" ry="7.5" fill="#D4AF37"/>
+        <circle cx="107" cy="98" r="5" fill="#070d20"/>
+        <circle cx="141" cy="98" r="5" fill="#070d20"/>
+        <circle cx="108.5" cy="96.5" r="1.8" fill="rgba(255,255,255,0.62)"/>
+        <circle cx="142.5" cy="96.5" r="1.8" fill="rgba(255,255,255,0.62)"/>
+        {/* SMIRK */}
+        <path d="M108 119 Q120 129 132 119" stroke="#8a6c08" strokeWidth="3" fill="none" strokeLinecap="round"/>
+        {/* SCARF */}
+        <path d="M86 112 Q120 104 154 112 Q151 128 120 132 Q89 128 86 112Z" fill="#9a7c10"/>
+        <rect x="112" y="130" width="16" height="12" fill="#D4AF37"/>
+        {/* COAT top */}
+        <path d="M64 143 L52 170 L188 170 L176 143 Q120 128 64 143Z" fill="#D4AF37"/>
+        <path d="M64 143 L52 170 L188 170 L176 143 Q120 128 64 143Z" fill="url(#dcHS)"/>
+        <path d="M120 143 L100 165 L120 158Z" fill="#9a7c10"/>
+        <path d="M120 143 L140 165 L120 158Z" fill="#9a7c10"/>
+        {/* LEFT ARM raised with cards */}
+        <path d="M64 151 L18 63 L34 53 L80 144Z" fill="#D4AF37"/>
+        <path d="M64 151 L18 63 L34 53 L80 144Z" fill="url(#dcHS)"/>
+        <circle cx="20" cy="57" r="15" fill="#D4AF37"/>
+        <g transform="translate(26,33)">
+          <g transform="rotate(-32)">
+            <rect x="-10" y="-30" width="20" height="28" rx="3.5" fill="#1a3a8c" stroke="#5a8ade" strokeWidth="1.2"/>
+          </g>
+          <g transform="rotate(-7)">
+            <rect x="-10" y="-30" width="20" height="28" rx="3.5" fill="#fffff0" stroke="#C8A060" strokeWidth="1.2"/>
+            <text x="-5" y="-16" fontSize="11" fontWeight="900" fontFamily="Georgia,serif" fill="#CC1111">A</text>
+            <text x="-4.5" y="-6" fontSize="10" fill="#CC1111">♥</text>
+          </g>
+          <g transform="rotate(18)">
+            <rect x="-10" y="-30" width="20" height="28" rx="3.5" fill="#fffff0" stroke="#C8A060" strokeWidth="1.2"/>
+            <text x="-6" y="-16" fontSize="11" fontWeight="900" fontFamily="Georgia,serif" fill="#111">K</text>
+            <text x="-4.5" y="-6" fontSize="10" fill="#111">♠</text>
+          </g>
         </g>
-        {/* Stripe overlay on torso + arm */}
-        <ellipse cx="33" cy="44" rx="11" ry="20" transform="rotate(22 33 44)" fill="url(#dcHS)"/>
-        <ellipse cx="45" cy="30" rx="6" ry="15" transform="rotate(-55 45 30)" fill="url(#dcHS)"/>
       </svg>
       <div className="deck-count">{count}</div>
     </div>
@@ -274,8 +291,6 @@ export default function Game({ state, myId, chatMessages, highscores }) {
 
       {/* ── Body ────────────────────────────────────────────────────────── */}
       <div className="g-body">
-
-        <ScorePanel players={state.players} myId={myId} currentPlayerId={state.currentPlayerId} />
 
         <div className="g-table">
 
