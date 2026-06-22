@@ -3,6 +3,7 @@ import socket from '../socket.js';
 import Chat from './Chat.jsx';
 import { useVoiceChat } from '../hooks/useVoiceChat.js';
 import { useAchievements, AchievementToast } from './AchievementToast.jsx';
+import { sfx } from '../utils/sounds.js';
 
 const SUIT = { hearts: '♥', diamonds: '♦', clubs: '♣', spades: '♠' };
 const RED  = new Set(['hearts', 'diamonds']);
@@ -178,8 +179,9 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
   const [newId,    setNewId]    = useState(null);
   const [chatOpen, setChatOpen] = useState(false);
 
-  const prevHandRef  = useRef([]);
-  const prevStateRef = useRef(null);
+  const prevHandRef     = useRef([]);
+  const prevStateRef    = useRef(null);
+  const gameOverSfxDone = useRef(false);
 
   const voice = useVoiceChat(myId);
   const ach   = useAchievements();
@@ -197,7 +199,7 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
     if (!me?.hand) return;
     const prev = new Set(prevHandRef.current.map(c => c.id));
     const drew = me.hand.find(c => !prev.has(c.id));
-    if (drew) { setNewId(drew.id); setTimeout(() => setNewId(null), 800); }
+    if (drew) { setNewId(drew.id); setTimeout(() => setNewId(null), 800); sfx.deal(); }
     prevHandRef.current = me.hand;
   }, [me?.hand]);
 
@@ -217,13 +219,16 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
         const cur = state.players.find(pp => pp.id === p.id);
         return cur && (cur.lastSlotTop?.size ?? 0) < (p.lastSlotTop?.size ?? 0);
       });
-      if (oppLost) ach.onSteal();
+      if (oppLost) { ach.onSteal(); sfx.steal(); }
+      else sfx.pair();
     }
-    if (myCards < prevMyCards && state.currentPlayerId !== myId) ach.onStolenFrom();
+    if (myCards < prevMyCards && state.currentPlayerId !== myId) {
+      ach.onStolenFrom(); sfx.stolenFrom();
+    }
 
     const meLocked   = (me.slots     || []).filter(s => s.locked).length;
     const prevLocked = (prevMe.slots || []).filter(s => s.locked).length;
-    if (meLocked > prevLocked) ach.onLock(meLocked >= 3);
+    if (meLocked > prevLocked) { ach.onLock(meLocked >= 3); sfx.lock(); }
 
     const curSafe  = (me.slots     || []).filter(s => s.isSafe).length;
     const prevSafe = (prevMe.slots || []).filter(s => s.isSafe).length;
@@ -237,6 +242,7 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
     socket.emit('game_action', action, res => {
       if (!res.ok) { showErr(res.error); return; }
       setSel(null);
+      if (action.type === 'DROP') sfx.drop();
       if (msg) { setFeedback(msg); setTimeout(() => setFeedback(''), 2600); }
     });
   }
@@ -258,6 +264,11 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
     : `🂠 ${state.deckCount} in deck`;
 
   if (state.phase === 'finished') {
+    if (!gameOverSfxDone.current) {
+      gameOverSfxDone.current = true;
+      const winner = [...state.players].sort((a, b) => b.score - a.score)[0];
+      if (winner?.id === myId) sfx.win(); else sfx.lose();
+    }
     return <GameOver players={state.players} myId={myId} highscores={highscores} />;
   }
 
@@ -275,11 +286,23 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
             {isMyTurn ? '⭐ Your Turn' : `${currentName}'s turn`}
           </div>
           <button className="icon-btn leave-btn" onClick={onLeave} title="Leave game">✕ Leave</button>
-          <button
-            className={`icon-btn mic-btn ${voice.active?'mic-btn--on':''} ${voice.talking?'mic-btn--talking':''}`}
-            onClick={voice.toggle}
-            title={voice.active ? 'Leave voice' : 'Join voice chat'}
-          >{voice.active ? '🎙️' : '🎤'}</button>
+          {!voice.active ? (
+            <button className="icon-btn" onClick={voice.join} title="Join voice chat">🎤</button>
+          ) : (
+            <>
+              <button
+                className={`icon-btn mic-btn ${voice.micMuted ? 'mic-btn--muted' : voice.talking ? 'mic-btn--talking' : 'mic-btn--on'}`}
+                onClick={voice.toggleMic}
+                title={voice.micMuted ? 'Unmute mic' : 'Mute mic'}
+              >{voice.micMuted ? '🔇' : '🎙️'}</button>
+              <button
+                className={`icon-btn ${voice.speakerMuted ? 'mic-btn--muted' : 'mic-btn--on'}`}
+                onClick={voice.toggleSpeaker}
+                title={voice.speakerMuted ? 'Unmute speaker' : 'Mute speaker'}
+              >{voice.speakerMuted ? '🔕' : '🔊'}</button>
+              <button className="icon-btn" onClick={voice.leave} title="Leave voice">📵</button>
+            </>
+          )}
           {voice.error && <span className="voice-err">{voice.error}</span>}
           <button className={`icon-btn ${chatOpen?'icon-btn--active':''}`}
             onClick={() => setChatOpen(v => !v)} title="Chat">💬</button>

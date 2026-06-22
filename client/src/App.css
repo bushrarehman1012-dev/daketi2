@@ -116,6 +116,10 @@ body {
   box-shadow: 0 0 14px rgba(38,85,204,.7), 0 0 0 2px var(--royal-lt);
   animation: micpulse .5s infinite alternate;
 }
+.mic-btn--muted {
+  background: rgba(80,20,20,.5); border-color: rgba(200,60,60,.4);
+  color: #ff8080;
+}
 @keyframes micpulse {
   from { box-shadow: 0 0 8px rgba(38,85,204,.5); }
   to   { box-shadow: 0 0 18px rgba(38,85,204,.9), 0 0 0 2px var(--royal-lt); }
