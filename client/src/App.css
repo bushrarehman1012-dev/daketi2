@@ -170,29 +170,34 @@ body {
 .lobby-content {
   position: relative; z-index: 1;
   display: flex; flex-direction: column; align-items: center;
-  gap: .7rem; padding: 1rem 1.4rem;
+  gap: .5rem; padding: .75rem 1.4rem;
   width: 100%; max-width: 390px;
   max-height: 100dvh; overflow: hidden;
 }
 
-/* ── Hero card image ── */
+/* Auth-page also uses lobby layout; keep content aligned */
+.auth-content {
+  gap: .45rem; padding: .75rem 1.4rem;
+}
+
+/* ── Hero card image — compact for single-page fit ── */
 .lobby-hero-wrap { display: flex; justify-content: center; }
 .lobby-hero-card {
-  width: clamp(110px, 32vw, 160px);
+  width: clamp(80px, 22vw, 120px);
   height: auto; display: block;
-  border-radius: 12px;
+  border-radius: 10px;
   border: 2.5px solid rgba(212,175,55,.75);
   box-shadow:
     0 0 0 1.5px rgba(212,175,55,.2),
-    0 8px 28px rgba(0,0,0,.85),
-    0 0 28px rgba(212,175,55,.3);
+    0 6px 22px rgba(0,0,0,.85),
+    0 0 22px rgba(212,175,55,.3);
 }
 
 /* ── Brand text ── */
 .lobby-brand { text-align: center; }
 .lobby-wordmark {
   font-family: 'Cinzel', serif;
-  font-size: clamp(2.2rem, 9vw, 3rem);
+  font-size: clamp(1.8rem, 8vw, 2.6rem);
   font-weight: 900;
   letter-spacing: .3em;
   text-indent: .3em;
@@ -219,10 +224,10 @@ body {
 .lobby-form-card {
   background: linear-gradient(160deg, #0c1838 0%, #080f28 100%);
   border: 1px solid var(--border-gold);
-  border-radius: 15px; padding: 1rem 1.1rem;
+  border-radius: 14px; padding: .8rem 1rem;
   width: 100%;
   box-shadow: var(--glow-royal), var(--shadow);
-  display: flex; flex-direction: column; gap: .62rem;
+  display: flex; flex-direction: column; gap: .5rem;
 }
 
 .lf-field { display: flex; flex-direction: column; gap: .3rem; }
@@ -516,8 +521,9 @@ body {
 .tc-glow {
   box-shadow: 0 0 0 2px var(--gold), 0 0 14px rgba(212,175,55,.7);
   cursor: pointer;
+  position: relative; z-index: 3;
 }
-.tc-glow:hover { transform: translateY(-4px) scale(1.08); }
+.tc-glow:hover { transform: translateY(-6px) scale(1.13); }
 .tc-pulse { animation: tcpulse .85s infinite; }
 @keyframes tcpulse {
   0%,100% { box-shadow: 0 0 0 2px var(--gold), 0 0 10px rgba(212,175,55,.5); }
@@ -565,12 +571,13 @@ body {
 ═══════════════════════════════════════ */
 .g-root { height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
 
-/* ── Header bar ── */
+/* ── Header bar — subtle gold gradient accent ── */
 .g-bar {
   display: flex; align-items: center; gap: .6rem; padding: .38rem .9rem;
-  background: linear-gradient(90deg, #080f28, #0c1838);
-  border-bottom: 1px solid var(--border-gold);
+  background: linear-gradient(90deg, #060c22, #0c1838 40%, #060c22);
+  border-bottom: 1px solid rgba(212,175,55,.35);
   flex-shrink: 0; height: 44px;
+  box-shadow: 0 1px 12px rgba(0,0,0,.5), 0 1px 0 rgba(212,175,55,.08) inset;
 }
 .g-bar-brand {
   font-family: 'Cinzel', serif; font-size: var(--fs-md); font-weight: var(--fw-black);
@@ -633,13 +640,18 @@ body {
 .score-name { font-size: .65rem; font-weight: var(--fw-semi); color: var(--text-dim); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .score-val  { font-size: .7rem; font-weight: var(--fw-bold); color: var(--gold); font-family: 'Cinzel', serif; flex-shrink: 0; }
 
-/* ── Endgame banner ── */
+/* ── Endgame banner — fixed overlay, never shifts the game layout ── */
 .endgame-banner {
-  background: linear-gradient(90deg, rgba(80,30,0,.7), rgba(50,20,0,.5), rgba(80,30,0,.7));
-  border: 1px solid rgba(212,120,30,.4);
-  border-radius: 7px; padding: .28rem .75rem;
+  position: fixed;
+  bottom: 68px; left: 50%; transform: translateX(-50%);
+  z-index: 650;
+  background: linear-gradient(90deg, rgba(100,40,0,.95), rgba(70,25,0,.9), rgba(100,40,0,.95));
+  border: 1px solid rgba(212,120,30,.7);
+  border-radius: 99px; padding: .35rem 1.4rem;
   font-size: var(--fs-xs); color: #ffb060; text-align: center;
-  font-weight: var(--fw-semi); flex-shrink: 0;
+  font-weight: var(--fw-bold); white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 0 20px rgba(180,80,0,.4);
   animation: pillpulse 1.5s infinite;
 }
 
@@ -691,15 +703,46 @@ body {
 .opp-facedown  { position: absolute; }
 .opp-back { transform: scale(.78); transform-origin: left top; }
 
+/* Opponent locked stacks — shows per-slot locked sets with card stack visual */
+.opp-locked-sets {
+  display: flex; gap: .4rem; flex-wrap: wrap; align-items: center; flex-shrink: 0;
+}
+.opp-locked-stack {
+  display: flex; align-items: center; gap: .25rem;
+}
+.opp-locked-cards {
+  position: relative; width: 26px; height: 34px; flex-shrink: 0;
+}
+.opp-locked-card-pip {
+  position: absolute; top: 0;
+  width: 20px; height: 30px;
+  background: linear-gradient(165deg, #fff8e8, #ffe8a0);
+  border: 1px solid rgba(212,175,55,.6);
+  border-radius: 3px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.35);
+}
+.opp-locked-badge {
+  font-size: var(--fs-2xs); color: var(--gold);
+  font-weight: var(--fw-bold); white-space: nowrap;
+  background: rgba(212,175,55,.1);
+  border: 1px solid rgba(212,175,55,.25);
+  border-radius: 99px; padding: 1px 5px;
+}
+
 /* Stealable top card — fixed-height slot so opp area never shifts */
 .opp-topcard-slot {
   height: 62px;
-  display: flex; align-items: flex-start;
+  display: flex; align-items: center;
   position: relative; flex-shrink: 0;
 }
+/* opp-topcard: flex row so STEAL text sits to the LEFT of the card */
 .opp-topcard {
-  position: relative;
+  display: flex; flex-direction: row;
+  align-items: center; gap: .3rem;
   cursor: default;
+}
+.opp-topcard-inner {
+  display: flex; flex-direction: column; align-items: center; gap: .15rem;
 }
 .opp-topcard--steal {
   cursor: pointer;
@@ -711,16 +754,21 @@ body {
   0%,100% { filter: drop-shadow(0 0 5px rgba(220,50,50,.6)); }
   50%      { filter: drop-shadow(0 0 12px rgba(220,50,50,.95)); }
 }
-/* STEAL label — absolute overlay, never adds to layout height */
+/* STEAL label — flex sibling to the LEFT of the card, not a layout-shifting element */
 .steal-cta {
-  position: absolute; top: -18px; left: 50%; transform: translateX(-50%);
-  font-size: var(--fs-2xs); font-weight: var(--fw-black); color: #ff6060;
-  letter-spacing: .1em; text-transform: uppercase; white-space: nowrap;
-  pointer-events: none;
-  animation: pillpulse .7s infinite;
+  font-size: var(--fs-sm); font-weight: var(--fw-black); color: #ff3333;
+  letter-spacing: .04em; text-transform: uppercase; white-space: nowrap;
+  pointer-events: none; flex-shrink: 0;
+  text-shadow: 0 0 10px rgba(255,50,50,.7);
+  animation: pillpulse .65s infinite;
+}
+/* Slot count badge below the top card */
+.opp-slot-count {
+  font-size: var(--fs-2xs); color: var(--gold);
+  font-weight: var(--fw-bold); white-space: nowrap;
 }
 
-/* ── Felt area — fixed min-height so deck card always fully visible ── */
+/* ── Felt area — overflow:visible so scaled floor cards render above the felt border ── */
 .g-felt {
   background: var(--felt);
   border-radius: 14px;
@@ -729,19 +777,32 @@ body {
   padding: .45rem .65rem;
   display: flex; flex-direction: column; gap: .3rem;
   flex: 1; min-height: 140px;
-  position: relative; overflow: hidden;
+  position: relative; overflow: visible;
 }
-/* Corner suit icons */
+/* Ornate corner suit icons — styled after the design elements filigree corners */
 .felt-corner {
-  position: absolute; font-size: 1.5rem; line-height: 1;
-  pointer-events: none; user-select: none; opacity: .22;
+  position: absolute; font-size: 1.3rem; line-height: 1;
+  pointer-events: none; user-select: none;
 }
-.felt-corner--tl { top: 7px;  left: 9px; }
-.felt-corner--tr { top: 7px;  right: 9px; }
-.felt-corner--bl { bottom: 7px; left: 9px; }
-.felt-corner--br { bottom: 7px; right: 9px; }
-.fs-r { color: #ff6060; }
-.fs-b { color: #ccccff; }
+.felt-corner--tl { top: 6px;  left: 8px; }
+.felt-corner--tr { top: 6px;  right: 8px; }
+.felt-corner--bl { bottom: 6px; left: 8px; }
+.felt-corner--br { bottom: 6px; right: 8px; }
+.fs-r { color: rgba(220,80,80,.35); }
+.fs-b { color: rgba(180,180,255,.28); }
+/* Gold L-shaped corner accent lines (design element filigree corners) */
+.felt-corner::before, .felt-corner::after {
+  content: ''; position: absolute;
+  background: rgba(212,175,55,.3);
+}
+.felt-corner--tl::before { width: 12px; height: 1.5px; top: -3px; left: 0; }
+.felt-corner--tl::after  { width: 1.5px; height: 12px; top: -3px; left: 0; }
+.felt-corner--tr::before { width: 12px; height: 1.5px; top: -3px; right: 0; }
+.felt-corner--tr::after  { width: 1.5px; height: 12px; top: -3px; right: 0; }
+.felt-corner--bl::before { width: 12px; height: 1.5px; bottom: -3px; left: 0; }
+.felt-corner--bl::after  { width: 1.5px; height: 12px; bottom: -3px; left: 0; }
+.felt-corner--br::before { width: 12px; height: 1.5px; bottom: -3px; right: 0; }
+.felt-corner--br::after  { width: 1.5px; height: 12px; bottom: -3px; right: 0; }
 
 .felt-row { display: flex; gap: 1.2rem; align-items: flex-start; justify-content: center; flex-wrap: nowrap; position: relative; z-index: 1; }
 .felt-col { display: flex; flex-direction: column; align-items: center; gap: .3rem; flex-shrink: 1; min-width: 0; }
@@ -749,47 +810,59 @@ body {
 .felt-div { width: 1px; height: 60px; background: rgba(255,255,255,.1); align-self: center; flex-shrink: 0; }
 .felt-empty { font-size: var(--fs-xs); color: rgba(255,255,255,.22); font-style: italic; }
 
-/* Floor cards scroll horizontally — never wrap (no height change) */
+/* Floor scroll wrapper — handles horizontal overflow independently */
+.floor-scroll {
+  overflow-x: auto; overflow-y: visible;
+  scrollbar-width: none; max-width: 100%;
+}
+.floor-scroll::-webkit-scrollbar { display: none; }
+/* Floor cards — inner flex row, allows vertical overflow for scale effect */
 .floor-cards {
   display: flex; gap: .35rem; flex-wrap: nowrap;
-  overflow-x: auto; scrollbar-width: none;
-  align-items: center; min-height: 62px; max-height: 62px;
+  align-items: center; min-height: 72px;
+  padding-top: 8px; /* headroom for cards to scale upward without clipping */
 }
-.floor-cards::-webkit-scrollbar { display: none; }
 /* Deck zone — fixed height so it never shifts */
 .deck-zone { position: relative; display: flex; align-items: center; min-height: 96px; flex-shrink: 0; }
 
-/* ── Deck card — no overflow:hidden so count badge renders outside card ── */
+/* ── Deck card — image fills card directly, no nested frame ── */
 .deck-card {
   position: relative;
   width: 62px; height: 94px;
   border: 2px solid var(--gold);
   border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
+  overflow: visible;
   box-shadow:
     0 0 0 1px rgba(212,175,55,.3),
-    0 0 18px rgba(212,175,55,.28),
-    0 4px 14px rgba(0,0,0,.65);
+    0 0 20px rgba(212,175,55,.32),
+    0 4px 16px rgba(0,0,0,.7);
   cursor: default;
   transition: box-shadow .25s;
   flex-shrink: 0;
 }
 .deck-card:hover {
   box-shadow:
-    0 0 0 1px rgba(212,175,55,.5),
-    0 0 26px rgba(212,175,55,.45),
-    0 4px 14px rgba(0,0,0,.65);
+    0 0 0 1px rgba(212,175,55,.55),
+    0 0 28px rgba(212,175,55,.5),
+    0 4px 16px rgba(0,0,0,.7);
+}
+.deck-thief-img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+  display: block;
 }
 .deck-count {
   position: absolute; bottom: -8px; right: -9px;
   background: var(--gold); color: #1a0e00;
-  font-size: .65rem; font-weight: var(--fw-black);
+  font-size: .68rem; font-weight: var(--fw-black);
   padding: 2px 7px; border-radius: 99px;
   border: 2px solid #060d22;
   min-width: 22px; text-align: center;
   font-family: 'Cinzel', serif;
   z-index: 2;
-  box-shadow: 0 2px 6px rgba(0,0,0,.5);
+  box-shadow: 0 2px 6px rgba(0,0,0,.6);
 }
 
 /* ── My area ── */
@@ -1019,12 +1092,12 @@ body {
 .auth-card {
   background: linear-gradient(160deg, #0c1838 0%, #080f28 100%);
   border: 1px solid var(--border-gold);
-  border-radius: 18px; padding: 1.6rem 1.4rem;
+  border-radius: 15px; padding: 1rem 1.1rem;
   width: 100%;
   box-shadow: var(--glow-royal), var(--shadow);
-  display: flex; flex-direction: column; gap: .85rem;
+  display: flex; flex-direction: column; gap: .6rem;
 }
-.auth-form { display: flex; flex-direction: column; gap: .75rem; }
+.auth-form { display: flex; flex-direction: column; gap: .5rem; }
 .auth-optional { font-size: var(--fs-2xs); color: var(--text-xs); font-weight: var(--fw-normal); }
 .auth-divider {
   display: flex; align-items: center; gap: .5rem;

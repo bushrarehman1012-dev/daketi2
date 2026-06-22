@@ -26,11 +26,11 @@ function CardBack({ withThief = false }) {
   );
 }
 
-// ── Deck card — large branded card with thief image ───────────────────────────
+// ── Deck card — thief image fills card directly, no nested frame ─────────────
 function DeckCard({ count }) {
   return (
     <div className="deck-card">
-      <CardBack withThief />
+      <img src="/card-back-hero.jpg" className="deck-thief-img" alt="Deck" />
       <div className="deck-count">{count}</div>
     </div>
   );
@@ -418,7 +418,7 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
         </div>
       </header>
 
-      {/* Floating toasts — no layout space consumed */}
+      {/* Floating overlays — zero layout space, render above everything */}
       {(err || feedback) && (
         <div className={`game-toast ${err ? 'game-toast--err' : 'game-toast--ok'}`}>
           {err || feedback}
@@ -427,19 +427,18 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
       {hintToast && (
         <div className="game-toast game-toast--hint">{hintToast}</div>
       )}
+      {state.phase === 'endgame' && (
+        <div className="endgame-banner">⚡ ENDGAME — last hand each</div>
+      )}
 
       {/* ── Body ────────────────────────────────────────────────────────── */}
       <div className="g-body">
         <div className="g-table">
 
-          {/* Turn status — always same height, no content that can shift layout */}
+          {/* Turn status — always same height, static text */}
           <div className={`g-hint ${!isMyTurn ? 'g-hint--idle' : ''}`}>
             {isMyTurn ? <>Your turn — tap a hand card to select</> : <>{currentName}&apos;s turn…</>}
           </div>
-
-          {state.phase === 'endgame' && (
-            <div className="endgame-banner">⚡ ENDGAME — 1 move per turn until all hands empty</div>
-          )}
 
           {/* ── Opponents ──────────────────────────────────────────────── */}
           <div className="g-opps">
@@ -461,6 +460,22 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
                     </div>
                   </div>
 
+                  {/* Locked stacks row — shows each locked set with count + lock */}
+                  {p.lockedSlots?.length > 0 && (
+                    <div className="opp-locked-sets">
+                      {p.lockedSlots.map((ls, i) => (
+                        <div key={i} className="opp-locked-stack">
+                          <div className="opp-locked-cards">
+                            {Array.from({ length: Math.min(ls.size, 3) }).map((_, j) => (
+                              <div key={j} className="opp-locked-card-pip" style={{ marginLeft: j * 6 }} />
+                            ))}
+                          </div>
+                          <span className="opp-locked-badge">🔒×{ls.size}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
                   <div className="opp-hand-pile">
                     {Array.from({ length: Math.min(p.handCount, 5) }).map((_, i) => (
                       <div key={i} className="opp-facedown" style={{ marginLeft: i * 10 }}>
@@ -469,7 +484,7 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
                     ))}
                   </div>
 
-                  {/* Fixed-height slot — opp area height never changes when steal appears */}
+                  {/* Fixed-height slot — STEAL text sits to the LEFT of the card */}
                   <div className="opp-topcard-slot">
                     {p.lastSlotTop && (
                       <div
@@ -480,11 +495,16 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
                         )}
                       >
                         {steal && <span className="steal-cta">STEAL!</span>}
-                        <TableCard
-                          card={p.lastSlotTop.topCard}
-                          glow={steal} pulsing={steal}
-                          locked={p.lastSlotTop.locked}
-                        />
+                        <div className="opp-topcard-inner">
+                          <TableCard
+                            card={p.lastSlotTop.topCard}
+                            glow={steal} pulsing={steal}
+                            locked={p.lastSlotTop.locked}
+                          />
+                          <span className="opp-slot-count">
+                            {p.lastSlotTop.locked ? '🔒' : ''}×{p.lastSlotTop.size}
+                          </span>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -502,18 +522,20 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
             <div className="felt-row">
               <div className="felt-col">
                 <div className="felt-lbl">FLOOR</div>
-                <div className="floor-cards">
-                  {state.floor.length === 0
-                    ? <span className="felt-empty">empty</span>
-                    : state.floor.map(c => (
-                        <TableCard key={c.id} card={c} glow={canFloor(c)}
-                          onClick={() => canFloor(c) && act(
-                            { type:'PAIR', handCardId: sel.id, floorCardId: c.id },
-                            'Pair! Keep going or drop.'
-                          )}
-                        />
-                      ))
-                  }
+                <div className="floor-scroll">
+                  <div className="floor-cards">
+                    {state.floor.length === 0
+                      ? <span className="felt-empty">empty</span>
+                      : state.floor.map(c => (
+                          <TableCard key={c.id} card={c} glow={canFloor(c)}
+                            onClick={() => canFloor(c) && act(
+                              { type:'PAIR', handCardId: sel.id, floorCardId: c.id },
+                              'Pair! Keep going or drop.'
+                            )}
+                          />
+                        ))
+                    }
+                  </div>
                 </div>
               </div>
               <div className="felt-div" />

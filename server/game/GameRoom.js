@@ -334,18 +334,23 @@ class GameRoom {
           };
         }
 
-        // Opponent: always reveal top card of last collected slot so it stays visible.
-        // locked flag tells client whether stealing is allowed.
+        // Opponent: reveal last slot's top card + each locked slot's size/topCard.
         const lastSlot = p.slots.length > 0 ? p.slots[p.slots.length - 1] : null;
         const lastSlotTop = lastSlot
           ? { topCard: lastSlot.cards.at(-1), size: lastSlot.cards.length, locked: lastSlot.locked }
           : null;
 
+        // All locked slots (excluding the last slot, which is already in lastSlotTop)
+        const lockedSlots = p.slots
+          .slice(0, p.slots.length > 0 ? p.slots.length - 1 : 0)
+          .filter(s => s.locked)
+          .map(s => ({ size: s.cards.length, topCard: s.cards.at(-1) }));
+
         return {
           id: p.id, name: p.name,
           handCount: p.hand.length, hand: null,
           lockedSetCount, currentScore, score: p.score,
-          lastSlotTop,
+          lastSlotTop, lockedSlots,
         };
       }),
     };

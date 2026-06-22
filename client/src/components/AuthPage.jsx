@@ -45,12 +45,12 @@ export default function AuthPage({ onContinueAsGuest }) {
 
       <div className="auth-content">
         {/* Logo */}
-        <div className="lobby-logo-wrap" style={{ marginBottom: '.5rem' }}>
-          <img src="/thief.png" className="thief-img" alt="Daketi Thief" />
-          <div className="lobby-brand">
-            <h1 className="lobby-wordmark">DAKETI</h1>
-            <p className="lobby-tagline">The Art of the Steal</p>
-          </div>
+        <div className="lobby-hero-wrap">
+          <img src="/card-back-hero.jpg" className="lobby-hero-card" alt="Daketi" />
+        </div>
+        <div className="lobby-brand">
+          <h1 className="lobby-wordmark">DAKETI</h1>
+          <p className="lobby-tagline">The Art of the Steal</p>
         </div>
 
         <div className="auth-card">

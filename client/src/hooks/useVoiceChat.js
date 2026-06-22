@@ -15,7 +15,9 @@ export function useVoiceChat(myId) {
   const audios          = useRef({});
   const analyser        = useRef(null);
   const animFrame       = useRef(null);
-  const speakerMutedRef = useRef(false); // stable ref for use inside getPeer callbacks
+  const speakerMutedRef = useRef(false);
+  // Sync ref so signal handler always reads current active state without waiting for re-render
+  const activeRef       = useRef(false);
 
   const dropPeer = useCallback(id => {
     peers.current[id]?.close();
@@ -52,9 +54,9 @@ export function useVoiceChat(myId) {
 
   useEffect(() => {
     async function onSignal({ fromId, type, data }) {
-      if (!active && type !== 'peer_joined') return;
+      if (!activeRef.current && type !== 'peer_joined') return;
       if (type === 'peer_joined') {
-        if (!active) return;
+        if (!activeRef.current) return;
         const pc = getPeer(data.peerId);
         const offer = await pc.createOffer();
         await pc.setLocalDescription(offer);
@@ -73,7 +75,7 @@ export function useVoiceChat(myId) {
     }
     socket.on('webrtc_signal', onSignal);
     return () => socket.off('webrtc_signal', onSignal);
-  }, [active, getPeer]);
+  }, [getPeer]); // activeRef is stable; no need to re-register on active change
 
   function startVolumeDetect(mediaStream) {
     try {
@@ -99,6 +101,7 @@ export function useVoiceChat(myId) {
     try {
       const s = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
       stream.current = s;
+      activeRef.current = true; // sync immediately so signal handler sees it right away
       setActive(true);
       setMicMuted(false);
       setError('');
@@ -115,6 +118,7 @@ export function useVoiceChat(myId) {
     stream.current = null;
     Object.keys(peers.current).forEach(dropPeer);
     cancelAnimationFrame(animFrame.current);
+    activeRef.current = false;
     setActive(false);
     setMicMuted(false);
     setTalking(false);
