@@ -3,10 +3,11 @@ import { useAuth } from '../context/AuthContext.jsx';
 
 export default function AuthPage({ onContinueAsGuest }) {
   const { register, login } = useAuth();
-  const [tab,      setTab]  = useState('login');   // 'login' | 'register'
-  const [form,     setForm] = useState({ username: '', displayName: '', email: '', password: '' });
-  const [err,      setErr]  = useState('');
-  const [busy,     setBusy] = useState(false);
+  const [tab,    setTab]  = useState('login');
+  const [form,   setForm] = useState({ username: '', displayName: '', email: '', password: '' });
+  const [err,    setErr]  = useState('');
+  const [busy,   setBusy] = useState(false);
+  const [showPw, setShowPw] = useState(false);
 
   function field(key) {
     return {
@@ -29,7 +30,6 @@ export default function AuthPage({ onContinueAsGuest }) {
           password:    form.password,
         });
       }
-      // AuthContext sets user → App renders Lobby
     } catch (e) {
       setErr(e.message);
     } finally {
@@ -38,23 +38,23 @@ export default function AuthPage({ onContinueAsGuest }) {
   }
 
   return (
-    <div className="auth-root">
+    <div className="auth-page">
       <div className="lobby-bg-suits" aria-hidden>
         <span>♠</span><span>♥</span><span>♦</span><span>♣</span>
       </div>
 
-      <div className="auth-content">
-        {/* Logo */}
-        <div className="lobby-hero-wrap">
-          <img src="/card-back-hero.jpg" className="lobby-hero-card" alt="Daketi" />
-        </div>
-        <div className="lobby-brand">
+      <div className="auth-shell">
+        {/* ── Brand / Logo ── */}
+        <div className="brand">
+          <div className="logo-frame">
+            <img src="/card-back-hero.jpg" className="brand-logo" alt="Daketi" />
+          </div>
           <h1 className="lobby-wordmark">DAKETI</h1>
           <p className="lobby-tagline">The Art of the Steal</p>
         </div>
 
+        {/* ── Auth card ── */}
         <div className="auth-card">
-          {/* Tabs */}
           <div className="lf-tabs">
             <button className={`lf-tab ${tab === 'login'    ? 'lf-tab--active' : ''}`} onClick={() => { setTab('login');    setErr(''); }}>Log In</button>
             <button className={`lf-tab ${tab === 'register' ? 'lf-tab--active' : ''}`} onClick={() => { setTab('register'); setErr(''); }}>Sign Up</button>
@@ -64,41 +64,66 @@ export default function AuthPage({ onContinueAsGuest }) {
             {tab === 'register' && (
               <div className="lf-field">
                 <label className="lf-label">Display Name</label>
-                <input className="lf-input" placeholder="What others see…" maxLength={20} {...field('displayName')} />
+                <div className="lf-input-wrap">
+                  <span className="lf-input-icon lf-iw--user" aria-hidden />
+                  <input className="lf-input lf-input--icon" placeholder="What others see…" maxLength={20} {...field('displayName')} />
+                </div>
               </div>
             )}
 
             <div className="lf-field">
               <label className="lf-label">Username</label>
-              <input className="lf-input" placeholder="Username…" maxLength={20} autoComplete="username" required {...field('username')} />
+              <div className="lf-input-wrap">
+                <span className="lf-input-icon lf-iw--user" aria-hidden />
+                <input className="lf-input lf-input--icon" placeholder="Username…" maxLength={20} autoComplete="username" required {...field('username')} />
+              </div>
             </div>
 
             {tab === 'register' && (
               <div className="lf-field">
                 <label className="lf-label">Email <span className="auth-optional">(optional)</span></label>
-                <input className="lf-input" type="email" placeholder="email@example.com" {...field('email')} />
+                <div className="lf-input-wrap">
+                  <span className="lf-input-icon lf-iw--mail" aria-hidden />
+                  <input className="lf-input lf-input--icon" type="email" placeholder="email@example.com" {...field('email')} />
+                </div>
               </div>
             )}
 
             <div className="lf-field">
               <label className="lf-label">Password</label>
-              <input className="lf-input" type="password" placeholder="Password…" autoComplete={tab === 'login' ? 'current-password' : 'new-password'} required {...field('password')} />
+              <div className="lf-input-wrap">
+                <span className="lf-input-icon lf-iw--lock" aria-hidden />
+                <input
+                  className="lf-input lf-input--icon lf-input--pw"
+                  type={showPw ? 'text' : 'password'}
+                  placeholder="Password…"
+                  autoComplete={tab === 'login' ? 'current-password' : 'new-password'}
+                  required
+                  {...field('password')}
+                />
+                <button type="button" className="lf-pw-toggle" onClick={() => setShowPw(v => !v)} tabIndex={-1}>
+                  <span className={`lf-iw--eye${showPw ? '-off' : ''}`} aria-hidden />
+                </button>
+              </div>
             </div>
 
             {err && <p className="lf-error">⚠ {err}</p>}
 
             <button className="lf-btn lf-btn--primary" type="submit" disabled={busy}>
-              {busy ? '…' : tab === 'login' ? 'Log In' : 'Create Account'}
+              {busy
+                ? <span className="auth-spinner" />
+                : <><span className="btn-icon lf-iw--lock-w" aria-hidden /> {tab === 'login' ? 'LOG IN' : 'CREATE ACCOUNT'}</>
+              }
             </button>
           </form>
 
           <div className="auth-divider"><span>or</span></div>
 
           <button className="lf-btn lf-btn--secondary" onClick={onContinueAsGuest}>
-            Continue as Guest
+            <span className="btn-icon lf-iw--user-w" aria-hidden /> CONTINUE AS GUEST
           </button>
 
-          <p className="lf-rules-hint">Guest sessions are temporary — log in to save history & friends</p>
+          <p className="lf-rules-hint">Guest sessions are temporary — log in to save history &amp; friends.</p>
         </div>
       </div>
     </div>

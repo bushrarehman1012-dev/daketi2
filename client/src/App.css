@@ -175,10 +175,8 @@ body {
   max-height: 100dvh; overflow: hidden;
 }
 
-/* Auth-page also uses lobby layout; keep content aligned */
-.auth-content {
-  gap: .45rem; padding: .75rem 1.4rem;
-}
+/* auth-content kept for legacy safety — auth-page uses auth-shell now */
+.auth-content { gap: .45rem; padding: .75rem 1.4rem; }
 
 /* ── Hero card image — no CSS border; artwork has its own ornate gold border ── */
 .lobby-hero-wrap { display: flex; justify-content: center; }
@@ -1112,28 +1110,67 @@ body {
 /* ═══════════════════════════════════════
    AUTH PAGE
 ═══════════════════════════════════════ */
-.auth-root {
-  height: 100dvh; display: flex; align-items: center; justify-content: center;
-  overflow: hidden; position: relative;
-  background: radial-gradient(ellipse at 50% 20%, #101e44 0%, #050d1e 65%, #020a18 100%);
+
+/* ── Full-page container ── */
+.auth-page {
+  min-height: 100svh; width: 100%;
+  display: grid; place-items: center;
+  padding: clamp(14px, 3vw, 28px);
+  overflow-x: hidden; position: relative;
+  background:
+    radial-gradient(circle at 50% 15%, rgba(43,83,172,.32), transparent 36%),
+    radial-gradient(circle at 50% 46%, rgba(217,180,49,.07), transparent 30%),
+    linear-gradient(180deg, #07142d 0%, #020713 100%);
 }
-.auth-content {
+
+/* ── Centered column ── */
+.auth-shell {
   position: relative; z-index: 1;
+  width: min(100%, 400px);
   display: flex; flex-direction: column; align-items: center;
-  gap: 1.2rem; padding: 1.5rem;
-  width: 100%; max-width: 400px;
-  overflow-y: auto; max-height: 100dvh;
 }
+
+/* ── Brand block: logo + wordmark + tagline ── */
+.brand { text-align: center; margin-bottom: 16px; }
+
+/* ── Premium logo frame — card shape with gold border ── */
+.logo-frame {
+  width: clamp(86px, 18vw, 118px);
+  aspect-ratio: 3 / 4;
+  margin: 0 auto 12px;
+  padding: 6px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(15,31,70,.96), rgba(3,10,26,.98));
+  border: 1px solid rgba(217,180,49,.42);
+  box-shadow:
+    0 14px 34px rgba(0,0,0,.52),
+    0 0 26px rgba(217,180,49,.12),
+    inset 0 1px 0 rgba(255,255,255,.06);
+  overflow: hidden;
+}
+.brand-logo {
+  width: 100%; height: 100%;
+  display: block; object-fit: cover;
+  border-radius: 13px;
+}
+
+/* ── Glass auth card ── */
 .auth-card {
-  background: linear-gradient(160deg, #0c1838 0%, #080f28 100%);
-  border: 1px solid var(--border-gold);
-  border-radius: 15px; padding: 1rem 1.1rem;
   width: 100%;
-  box-shadow: var(--glow-royal), var(--shadow);
+  padding: 16px 16px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(217,180,49,.28);
+  background: rgba(6,18,43,.84);
+  box-shadow:
+    0 24px 64px rgba(0,0,0,.48),
+    inset 0 1px 0 rgba(255,255,255,.04);
+  backdrop-filter: blur(14px);
   display: flex; flex-direction: column; gap: .6rem;
 }
+
 .auth-form { display: flex; flex-direction: column; gap: .5rem; }
 .auth-optional { font-size: var(--fs-2xs); color: var(--text-xs); font-weight: var(--fw-normal); }
+
 .auth-divider {
   display: flex; align-items: center; gap: .5rem;
   color: var(--text-xs); font-size: var(--fs-xs);
@@ -1141,11 +1178,78 @@ body {
 .auth-divider::before, .auth-divider::after {
   content: ''; flex: 1; height: 1px; background: var(--border);
 }
+
+/* ── Input with icon prefix ── */
+.lf-input-wrap { position: relative; display: flex; align-items: center; }
+.lf-input-wrap .lf-input { width: 100%; }
+
+/* Shared icon sizing — SVG loaded via modifier class below */
+.lf-input-icon {
+  position: absolute; left: .72rem; top: 50%; transform: translateY(-50%);
+  width: 15px; height: 15px; flex-shrink: 0;
+  background-size: contain; background-repeat: no-repeat; background-position: center;
+  pointer-events: none;
+}
+.lf-input--icon { padding-left: 2.45rem; }
+.lf-input--pw   { padding-right: 2.6rem; }
+
+/* Person icon */
+.lf-iw--user {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2386a0dc' opacity='.55' d='M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z'/%3E%3C/svg%3E");
+}
+/* Person icon — white variant for button */
+.lf-iw--user-w {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffffff' opacity='.85' d='M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z'/%3E%3C/svg%3E");
+}
+/* Lock icon */
+.lf-iw--lock {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2386a0dc' opacity='.55' d='M18 8h-1V6c0-2.8-2.2-5-5-5S7 3.2 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM12 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.7 1.4-3.1 3.1-3.1 1.7 0 3.1 1.4 3.1 3.1v2z'/%3E%3C/svg%3E");
+}
+/* Lock icon — dark variant for gold button */
+.lf-iw--lock-w {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%231a0e00' opacity='.75' d='M18 8h-1V6c0-2.8-2.2-5-5-5S7 3.2 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM12 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.7 1.4-3.1 3.1-3.1 1.7 0 3.1 1.4 3.1 3.1v2z'/%3E%3C/svg%3E");
+}
+/* Mail icon */
+.lf-iw--mail {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2386a0dc' opacity='.55' d='M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z'/%3E%3C/svg%3E");
+}
+/* Eye icon (password visible) */
+.lf-iw--eye {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2386a0dc' opacity='.5' d='M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z'/%3E%3C/svg%3E");
+}
+/* Eye-off icon (password hidden) */
+.lf-iw--eye-off {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2386a0dc' opacity='.5' d='M19.5 12c0 .23-.02.46-.05.68l2.86 2.23c.26-.7.44-1.44.5-2.21.02-.23.03-.46.03-.69 0-3.87-2.23-7.22-5.5-8.94l-1.98 1.55c1.94.98 3.41 2.89 4.14 5.38zm-7.5 6c-3.31 0-6-2.69-6-6 0-.34.04-.68.1-1.01L2.73 7.73A11.94 11.94 0 001 12c0 3.87 2.23 7.22 5.5 8.94l1.98-1.55A5.97 5.97 0 016 12c0 .81.15 1.57.43 2.28L8.7 12.5A3.49 3.49 0 0112 8.5c.84 0 1.6.28 2.22.74L16.5 7.08A5.97 5.97 0 0012 6c-.55 0-1.08.07-1.59.2L8.18 4.41A11.96 11.96 0 0112 4c3.87 0 7.22 2.23 8.94 5.5L23 7.27A11.94 11.94 0 0012 4zM3.27 1L2 2.27 6.83 7.1A11.96 11.96 0 001 12c1.73 4.39 6 7.5 11 7.5 1.79 0 3.48-.47 4.97-1.29l4.76 4.76 1.27-1.27L3.27 1zM12 17c-2.76 0-5-2.24-5-5 0-1.12.37-2.14.99-2.97l6.98 6.98A4.97 4.97 0 0112 17zm4.42-2.42l1.36 1.36A11.88 11.88 0 0023 12c-1.73-4.39-6-7.5-11-7.5-.69 0-1.37.07-2.03.18l1.66 1.66c.11 0 .22-.02.33-.02 2.64 0 4.91 1.71 5.73 4.08l-3.27-3.27c-.24-.62-.61-1.18-1.08-1.64l1.08-1.08z'/%3E%3C/svg%3E");
+}
+
+/* Password eye toggle button */
+.lf-pw-toggle {
+  position: absolute; right: .65rem; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer; padding: .3rem;
+  display: flex; align-items: center; justify-content: center;
+}
+.lf-pw-toggle span {
+  display: block; width: 16px; height: 16px;
+  background-size: contain; background-repeat: no-repeat; background-position: center;
+  transition: opacity .15s;
+}
+.lf-pw-toggle:hover span { opacity: 1 !important; }
+
+/* Icon in button — sits as inline flex sibling */
+.btn-icon {
+  display: inline-block; width: 14px; height: 14px;
+  background-size: contain; background-repeat: no-repeat; background-position: center;
+  vertical-align: middle; flex-shrink: 0; margin-right: 2px;
+}
+
+/* Spinner for busy state inside button */
 .auth-spinner {
-  width: 36px; height: 36px; border-radius: 50%;
-  border: 3px solid rgba(212,175,55,.15);
-  border-top-color: var(--gold);
-  animation: spin .8s linear infinite;
+  display: inline-block;
+  width: 18px; height: 18px; border-radius: 50%;
+  border: 2px solid rgba(26,14,0,.25);
+  border-top-color: rgba(26,14,0,.7);
+  animation: spin .7s linear infinite;
+  vertical-align: middle;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -1350,4 +1454,26 @@ body {
   .lobby-form-card { padding: .75rem .9rem; gap: .48rem; }
   .lf-input        { padding: .5rem .8rem; }
   .lf-btn          { padding: .55rem 1rem; }
+}
+
+/* Auth page — short screens (laptops ~720px, landscape phones) */
+@media (max-height: 720px) {
+  .auth-page { align-items: start; padding-top: 10px; padding-bottom: 10px; }
+  .brand { margin-bottom: 10px; }
+  .logo-frame { width: 76px; margin-bottom: 8px; padding: 5px; border-radius: 14px; }
+  .brand-logo { border-radius: 10px; }
+  .auth-card { padding: 13px 14px 11px; gap: .5rem; border-radius: 16px; }
+  .auth-form { gap: .4rem; }
+  /* Smaller wordmark on short screens */
+  .auth-page .lobby-wordmark { font-size: 1.9rem; }
+  .auth-page .lobby-tagline  { font-size: .55rem; margin-top: .2rem; }
+}
+
+/* Auth page — mobile width (≤ 420px) */
+@media (max-width: 420px) {
+  .auth-page { padding: 12px; }
+  .auth-shell { width: 100%; }
+  .logo-frame { width: clamp(80px, 24vw, 96px); }
+  .auth-page .lobby-wordmark { font-size: clamp(1.9rem, 11vw, 2.5rem); letter-spacing: .2em; }
+  .auth-card { border-radius: 18px; padding: 14px 13px 12px; }
 }
