@@ -72,33 +72,30 @@ function DeckCard({ count }) {
   );
 }
 
-// ── Card pip layouts — [x%, y%, flipBottomHalf] ──────────────────────────────
-// x/y are % positions within the pip area; flip=true rotates the symbol 180°
+// ── Standard playing card pip positions ──────────────────────────────────────
+// [x%, y%] within the pip area. Symmetric: each pip above 50% has a mirror
+// below 50%. Pips at y > 50 are rotated 180° (standard card convention).
 const PIP_POS = {
-  'A':  [[50,50,false]],
-  '2':  [[50,17,false],[50,83,true]],
-  '3':  [[50,13,false],[50,50,false],[50,87,true]],
-  '4':  [[24,18,false],[76,18,false],[24,82,true],[76,82,true]],
-  '5':  [[24,18,false],[76,18,false],[50,50,false],[24,82,true],[76,82,true]],
-  '6':  [[24,16,false],[76,16,false],[24,50,false],[76,50,false],[24,84,true],[76,84,true]],
-  '7':  [[24,13,false],[76,13,false],[50,31,false],[24,52,false],[76,52,false],[24,78,true],[76,78,true]],
-  '8':  [[24,11,false],[76,11,false],[50,28,false],[24,50,false],[76,50,true],[50,72,true],[24,89,true],[76,89,true]],
-  '9':  [[24,10,false],[76,10,false],[24,32,false],[76,32,false],[50,50,false],[24,68,true],[76,68,true],[24,90,true],[76,90,true]],
-  '10': [[24,8,false],[76,8,false],[50,23,false],[24,38,false],[76,38,false],[24,62,true],[76,62,true],[50,77,true],[24,92,true],[76,92,true]],
+  'A':  [[50,50]],
+  '2':  [[50,18],[50,82]],
+  '3':  [[50,12],[50,50],[50,88]],
+  '4':  [[27,20],[73,20],[27,80],[73,80]],
+  '5':  [[27,20],[73,20],[50,50],[27,80],[73,80]],
+  '6':  [[27,18],[73,18],[27,50],[73,50],[27,82],[73,82]],
+  // 7: 6-layout + 1 upper-center pip (7 is intentionally asymmetric)
+  '7':  [[27,15],[73,15],[50,33],[27,53],[73,53],[27,78],[73,78]],
+  // 8: 7-layout mirrored — adds lower-center pip to make it symmetric
+  '8':  [[27,13],[73,13],[50,30],[27,50],[73,50],[50,70],[27,87],[73,87]],
+  // 9: 4 corner-pairs + 1 center
+  '9':  [[27,12],[73,12],[27,34],[73,34],[50,50],[27,66],[73,66],[27,88],[73,88]],
+  // 10: 3 row-pairs + upper & lower center pips
+  '10': [[27,10],[73,10],[50,26],[27,38],[73,38],[27,62],[73,62],[50,74],[27,90],[73,90]],
 };
-
-function pipSize(count) {
-  if (count === 1) return 20;
-  if (count <= 4)  return 15;
-  if (count <= 6)  return 13;
-  return 11;
-}
 
 function CardCenter({ rank, suit }) {
   const sym  = SUIT[suit];
   const pips = PIP_POS[rank];
 
-  // Face cards — large initial + suit
   if (!pips) return (
     <div className="hc-face">
       <span className="hc-face-initial">{rank}</span>
@@ -106,13 +103,14 @@ function CardCenter({ rank, suit }) {
     </div>
   );
 
-  const fs = `${pipSize(pips.length)}px`;
+  const n  = pips.length;
+  const fs = n <= 1 ? 22 : n <= 4 ? 16 : n <= 6 ? 14 : 12;
   return (
     <div className="hc-pips">
-      {pips.map(([x, y, flip], i) => (
+      {pips.map(([x, y], i) => (
         <span key={i} className="hc-pip" style={{
-          left: `${x}%`, top: `${y}%`, fontSize: fs,
-          transform: `translate(-50%,-50%)${flip ? ' rotate(180deg)' : ''}`,
+          left: `${x}%`, top: `${y}%`, fontSize: `${fs}px`,
+          transform: `translate(-50%,-50%)${y > 50 ? ' rotate(180deg)' : ''}`,
         }}>{sym}</span>
       ))}
     </div>
@@ -386,11 +384,13 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
                 <div key={p.id} className={`opp ${isCur ? 'opp--active' : ''}`}>
                   <div className="opp-head">
                     <div className="opp-av">{p.name[0]}</div>
-                    <div>
-                      <div className="opp-nm">{p.name}{isCur && <span className="live-dot"/>}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div className="opp-nm">
+                        <span className="opp-score-inline">{p.currentScore}</span>
+                        {p.name}{isCur && <span className="live-dot"/>}
+                      </div>
                       <div className="opp-meta">
                         {p.lockedSetCount > 0 && <span>🔒×{p.lockedSetCount}</span>}
-                        <span className="opp-score-badge">{p.currentScore}pt</span>
                       </div>
                     </div>
                   </div>

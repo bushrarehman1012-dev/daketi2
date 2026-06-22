@@ -591,7 +591,12 @@ body {
   font-weight: var(--fw-bold); font-size: var(--fs-xs); color: var(--gold);
 }
 .opp-nm {
-  font-size: var(--fs-sm); font-weight: var(--fw-semi); display: flex; align-items: center; gap: .3rem;
+  font-size: var(--fs-sm); font-weight: var(--fw-semi); display: flex; align-items: center; gap: .3rem; flex-wrap: wrap;
+}
+.opp-score-inline {
+  font-family: 'Cinzel', serif; font-size: var(--fs-xs); font-weight: var(--fw-black);
+  color: var(--gold); background: rgba(212,175,55,.12); border: 1px solid rgba(212,175,55,.3);
+  border-radius: 5px; padding: 0 .35rem; line-height: 1.5; flex-shrink: 0;
 }
 .live-dot {
   display: inline-block; width: 6px; height: 6px; border-radius: 50%;

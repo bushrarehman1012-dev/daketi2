@@ -8,7 +8,11 @@ const GameRoom = require('./game/GameRoom');
 
 const app    = express();
 const server = http.createServer(app);
-const io     = new Server(server, { cors: { origin: '*', methods: ['GET','POST'] } });
+const io     = new Server(server, {
+  cors: { origin: '*', methods: ['GET','POST'] },
+  pingInterval: 25000,
+  pingTimeout:  60000, // generous timeout — prevents tab-switch / mobile background disconnects
+});
 
 app.use(cors());
 app.get('/health', (_, res) => res.json({ ok: true }));
