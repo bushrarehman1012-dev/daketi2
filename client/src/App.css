@@ -160,9 +160,10 @@ body {
 .lobby-logo-wrap {
   display: flex; flex-direction: column; align-items: center; gap: .5rem;
 }
-.thief-svg {
-  width: 160px; height: 200px;
-  filter: drop-shadow(0 0 20px rgba(212,175,55,.2)) drop-shadow(0 4px 16px rgba(0,0,0,.6));
+.thief-img {
+  width: 220px; height: auto;
+  filter: drop-shadow(0 0 24px rgba(212,175,55,.25)) drop-shadow(0 6px 20px rgba(0,0,0,.7));
+  display: block;
 }
 .lobby-brand { text-align: center; }
 .lobby-wordmark {
@@ -692,7 +693,8 @@ body {
     0 4px 14px rgba(0,0,0,.6);
 }
 .deck-thief {
-  width: 58px; height: 72px;
+  width: 56px; height: auto;
+  object-fit: contain;
   filter: drop-shadow(0 1px 3px rgba(0,0,0,.5));
 }
 .deck-count {
@@ -934,5 +936,5 @@ body {
     width: 100%; position: absolute; right: 0; top: 0; bottom: 0; z-index: 200;
   }
   .lobby-wordmark { font-size: 2.2rem; }
-  .thief-svg { width: 130px; height: 162px; }
+  .thief-img { width: 160px; }
 }
