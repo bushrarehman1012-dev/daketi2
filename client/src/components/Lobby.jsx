@@ -1,22 +1,6 @@
 import { useState, useEffect } from 'react';
 import socket from '../socket.js';
 
-function CardLogo() {
-  return (
-    <div className="lobby-card-logo">
-      <div className="lcl-corner lcl-tl">
-        <span className="lcl-rank">A</span>
-        <span className="lcl-suit">♠</span>
-      </div>
-      <span className="lcl-center">♠</span>
-      <div className="lcl-corner lcl-br">
-        <span className="lcl-rank">A</span>
-        <span className="lcl-suit">♠</span>
-      </div>
-    </div>
-  );
-}
-
 export default function Lobby({ onJoined, onlineUsers = [], mySocketId, user, onOpenProfile }) {
   const [name,  setName]  = useState(() => user?.displayName || localStorage.getItem('daketi_name') || '');
   const [code,  setCode]  = useState('');
@@ -74,30 +58,32 @@ export default function Lobby({ onJoined, onlineUsers = [], mySocketId, user, on
 
   return (
     <div className="lobby-root">
-      {/* ── Background suit watermarks ── */}
+      {/* Faint suit watermarks */}
       <div className="lobby-bg-suits" aria-hidden>
         <span>♠</span><span>♥</span><span>♦</span><span>♣</span>
       </div>
 
       <div className="lobby-content">
-        {/* ── Logo lockup: card + DAKETI title ── */}
-        <div className="lobby-header">
-          <div className="lobby-logo-lockup">
-            <CardLogo />
-            <div className="lobby-brand">
-              <h1 className="lobby-wordmark">DAKETI</h1>
-              <p className="lobby-tagline">The Art of the Steal</p>
-            </div>
-          </div>
 
-          {user && (
-            <button className="lobby-profile-btn" onClick={onOpenProfile}>
-              <span className="lobby-profile-av">{(user.displayName?.[0] || '?').toUpperCase()}</span>
-              <span>{user.displayName}</span>
-              <span className="lobby-profile-caret">▾</span>
-            </button>
-          )}
+        {/* ── Hero card ── */}
+        <div className="lobby-hero-wrap">
+          <img src="/card-back-hero.jpg" className="lobby-hero-card" alt="Daketi" />
         </div>
+
+        {/* ── Brand ── */}
+        <div className="lobby-brand">
+          <h1 className="lobby-wordmark">DAKETI</h1>
+          <p className="lobby-tagline">The Art of the Steal</p>
+        </div>
+
+        {/* ── Profile button (logged-in users) ── */}
+        {user && (
+          <button className="lobby-profile-btn" onClick={onOpenProfile}>
+            <span className="lobby-profile-av">{(user.displayName?.[0] || '?').toUpperCase()}</span>
+            <span>{user.displayName}</span>
+            <span className="lobby-profile-caret">▾</span>
+          </button>
+        )}
 
         {/* ── Form card ── */}
         <div className="lobby-form-card">
@@ -146,6 +132,7 @@ export default function Lobby({ onJoined, onlineUsers = [], mySocketId, user, on
           )}
           <p className="lf-rules-hint">2–6 players · Steal, pair, lock — most sets wins</p>
         </div>
+
       </div>
     </div>
   );

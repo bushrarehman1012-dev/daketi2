@@ -136,92 +136,69 @@ body {
   background: radial-gradient(ellipse at 50% 20%, #101e44 0%, #050d1e 65%, #020a18 100%);
 }
 
-/* Background suit watermarks */
+/* Faint suit watermarks */
 .lobby-bg-suits {
   position: absolute; inset: 0; pointer-events: none; overflow: hidden;
-  display: flex; align-items: center; justify-content: center;
-  gap: 0;
+  display: flex; align-items: center; justify-content: center; gap: 0;
 }
 .lobby-bg-suits span {
   font-size: 22vmin; color: rgba(212,175,55,.03);
-  user-select: none; line-height: 1; padding: 0 1vmin;
-  font-family: serif;
+  user-select: none; line-height: 1; padding: 0 1vmin; font-family: serif;
 }
 
-/* Content wrapper */
+/* Content column — fits in one viewport, no scroll */
 .lobby-content {
   position: relative; z-index: 1;
   display: flex; flex-direction: column; align-items: center;
-  gap: .85rem; padding: 1.2rem 1.5rem;
-  width: 100%; max-width: 400px;
+  gap: .7rem; padding: 1rem 1.4rem;
+  width: 100%; max-width: 390px;
+  max-height: 100dvh; overflow: hidden;
 }
 
-/* ── Logo header (lockup + optional profile btn) */
-.lobby-header {
-  display: flex; flex-direction: column; align-items: center; gap: .55rem;
-  width: 100%;
+/* ── Hero card image ── */
+.lobby-hero-wrap { display: flex; justify-content: center; }
+.lobby-hero-card {
+  width: clamp(110px, 32vw, 160px);
+  height: auto; display: block;
+  border-radius: 10px;
+  filter: drop-shadow(0 6px 24px rgba(0,0,0,.7)) drop-shadow(0 0 18px rgba(212,175,55,.22));
 }
 
-/* Card + DAKETI side-by-side lockup */
-.lobby-logo-lockup {
-  display: flex; flex-direction: row; align-items: center; gap: 1.1rem;
-}
-
-/* Ace of Spades logo card — same cream style as in-game hand cards */
-.lobby-card-logo {
-  position: relative;
-  width: 68px; height: 98px;
-  background: linear-gradient(165deg, #FFFFF8 0%, #FFF8DC 55%, #FFF2C0 100%);
-  border: 1.5px solid #C8A060;
-  border-radius: 9px;
-  box-shadow:
-    0 0 0 1px rgba(212,175,55,.25),
-    0 0 20px rgba(212,175,55,.4),
-    0 8px 28px rgba(0,0,0,.75);
-  color: #111;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-.lcl-corner {
-  position: absolute;
-  display: flex; flex-direction: column; align-items: center; line-height: 1.05;
-}
-.lcl-tl { top: 5px; left: 6px; }
-.lcl-br { bottom: 5px; right: 6px; transform: rotate(180deg); }
-.lcl-rank { font-family: 'Georgia', serif; font-size: 14px; font-weight: 800; line-height: 1; }
-.lcl-suit { font-size: 10px; line-height: 1; }
-.lcl-center { font-size: 40px; line-height: 1; pointer-events: none; }
-
-/* Brand text */
-.lobby-brand { text-align: left; }
+/* ── Brand text ── */
+.lobby-brand { text-align: center; }
 .lobby-wordmark {
   font-family: 'Cinzel', serif;
-  font-size: clamp(2.4rem, 9vw, 3.4rem);
+  font-size: clamp(2.2rem, 9vw, 3rem);
   font-weight: 900;
-  color: var(--gold);
-  letter-spacing: .2em;
-  line-height: 1;
-  /* Layered shadows create a subtle 3D extruded effect */
-  text-shadow:
-    0 1px 0 #c9a227,
-    0 2px 0 #a87d00,
-    0 3px 0 #7a5c00,
-    0 4px 10px rgba(0,0,0,.6),
-    0 0 44px rgba(212,175,55,.38);
+  letter-spacing: .3em;
+  text-indent: .3em;
+  line-height: 1; margin: 0;
+  /* Elegant gold gradient — no chunky 3D shadows */
+  background: linear-gradient(175deg, #f5e080 0%, #D4AF37 45%, #8a6800 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 14px rgba(212,175,55,.28));
 }
 .lobby-tagline {
-  font-family: 'Cinzel', serif; font-size: .62rem; color: var(--text-dim);
-  letter-spacing: .16em; text-transform: uppercase; margin-top: .35rem;
+  display: flex; align-items: center; gap: .55rem;
+  font-family: 'Cinzel', serif; font-size: .58rem;
+  color: var(--text-dim); letter-spacing: .14em; text-transform: uppercase;
+  margin-top: .3rem;
+}
+.lobby-tagline::before, .lobby-tagline::after {
+  content: ''; flex: 1; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(212,175,55,.3), transparent);
 }
 
 /* Form card */
 .lobby-form-card {
   background: linear-gradient(160deg, #0c1838 0%, #080f28 100%);
   border: 1px solid var(--border-gold);
-  border-radius: 16px; padding: 1.2rem 1.2rem;
+  border-radius: 15px; padding: 1rem 1.1rem;
   width: 100%;
   box-shadow: var(--glow-royal), var(--shadow);
-  display: flex; flex-direction: column; gap: .7rem;
+  display: flex; flex-direction: column; gap: .62rem;
 }
 
 .lf-field { display: flex; flex-direction: column; gap: .3rem; }
@@ -478,16 +455,10 @@ body {
 .tc-r { color: var(--red); }
 .tc-b { color: #111; }
 .tc-back {
-  background: linear-gradient(160deg, #162a6a, #0e1c50);
-  border-color: #6a5a9a;
+  background: url('/card-back-hero.jpg') center/cover no-repeat;
+  border-color: rgba(212,175,55,.6);
 }
-.tc-pat {
-  width: calc(100% - 8px); height: calc(100% - 8px); border-radius: 3px;
-  background:
-    repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(255,255,255,.06) 3px, rgba(255,255,255,.06) 6px),
-    repeating-linear-gradient(-45deg, transparent, transparent 3px, rgba(255,255,255,.06) 3px, rgba(255,255,255,.06) 6px);
-  border: 1px solid rgba(255,255,255,.1);
-}
+/* .tc-pat is no longer rendered inside face-down cards */
 .tc-glow {
   box-shadow: 0 0 0 2px var(--gold), 0 0 14px rgba(212,175,55,.7);
   cursor: pointer;
@@ -504,6 +475,16 @@ body {
 .tc-rank    { font-family: 'Georgia', serif; font-size: 11px; font-weight: 800; line-height: 1; }
 .tc-suit-sm { font-size: 8px; line-height: 1; }
 .tc-pips { position: absolute; top: 14px; bottom: 14px; left: 2px; right: 2px; pointer-events: none; font-size: 10px; }
+/* Face card SVG scaled for table cards (same viewBox as hc-face-svg, smaller container) */
+.tc-face-svg {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(100% - 6px);
+  height: calc(100% - 22px);
+  pointer-events: none;
+  overflow: visible;
+}
 .tc-face-center {
   position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
   display: flex; flex-direction: column; align-items: center; gap: 1px; pointer-events: none;
@@ -544,7 +525,15 @@ body {
 .g-bar-room { font-size: var(--fs-xs); color: var(--text-dim); letter-spacing: .12em; }
 .g-bar-room strong { color: var(--text); }
 .g-bar-phase { font-size: var(--fs-xs); color: var(--text-dim); }
-.g-bar-right { margin-left: auto; display: flex; align-items: center; gap: .45rem; }
+/* Right section scrolls horizontally on mobile so chat button stays visible */
+.g-bar-right {
+  margin-left: auto; display: flex; align-items: center; gap: .35rem;
+  overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  flex-shrink: 1; min-width: 0;
+}
+.g-bar-right::-webkit-scrollbar { display: none; }
+/* Voice group — inlined buttons when voice is active */
+.voice-group { display: flex; align-items: center; gap: .25rem; flex-shrink: 0; }
 
 /* Turn pill */
 .turn-pill {
@@ -559,14 +548,16 @@ body {
 }
 @keyframes pillpulse { 0%,100% { opacity:1 } 50% { opacity:.7 } }
 
-/* ── Feedback strip ── */
+/* ── Feedback strip — fixed height so it never causes layout shift ── */
 .g-strip {
-  padding: .3rem 1rem; font-size: var(--fs-sm); text-align: center; flex-shrink: 0;
-  animation: stripIn .22s ease-out;
+  height: 28px; padding: 0 1rem;
+  display: flex; align-items: center; justify-content: center;
+  font-size: var(--fs-sm); text-align: center; flex-shrink: 0;
+  transition: background .18s, color .18s;
 }
-@keyframes stripIn { from { opacity:0; transform:translateY(-5px) } }
-.g-strip--err { background: rgba(80,8,8,.8); color: #ff9090; }
-.g-strip--ok  { background: rgba(10,30,70,.9); color: #80c0ff; }
+.g-strip--err    { background: rgba(80,8,8,.8); color: #ff9090; }
+.g-strip--ok     { background: rgba(10,30,70,.9); color: #80c0ff; }
+.g-strip--hidden { background: transparent; color: transparent; pointer-events: none; }
 
 /* ── Body ── */
 .g-body { flex: 1; display: flex; min-height: 0; overflow: hidden; }
@@ -611,12 +602,15 @@ body {
   animation: pillpulse 1.5s infinite;
 }
 
-/* ── Turn hint ── */
+/* ── Turn hint — fixed height to prevent layout shift when text changes ── */
 .g-hint {
   background: rgba(26,63,170,.18); border: 1px solid rgba(26,63,170,.4);
-  border-radius: 8px; padding: .28rem .75rem;
-  font-size: var(--fs-xs); color: #aaccff; flex-shrink: 0; line-height: 1.4;
+  border-radius: 8px; padding: .22rem .75rem;
+  font-size: var(--fs-xs); color: #aaccff; flex-shrink: 0;
+  height: 28px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+  display: flex; align-items: center;
 }
+.g-hint--idle { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.08); color: var(--text-dim); }
 .g-hint strong, .hint-card { color: var(--gold); font-weight: var(--fw-bold); }
 .g-hint em { color: #80c0ff; font-style: normal; font-weight: var(--fw-semi); }
 
@@ -679,14 +673,15 @@ body {
   animation: pillpulse .7s infinite;
 }
 
-/* ── Felt area ── */
+/* ── Felt area — flex:1 so it fills the middle, pushing my area to bottom ── */
 .g-felt {
   background: var(--felt);
   border-radius: 14px;
   border: 3px solid #2a1800;
   box-shadow: 0 0 0 1.5px #5a3a08, inset 0 0 40px rgba(0,0,0,.45), var(--shadow);
   padding: .45rem .65rem;
-  display: flex; flex-direction: column; gap: .3rem; flex-shrink: 0;
+  display: flex; flex-direction: column; gap: .3rem;
+  flex: 1; min-height: 90px;
   position: relative; overflow: hidden;
 }
 /* Corner suit icons */
@@ -710,32 +705,27 @@ body {
 .floor-cards { display: flex; gap: .35rem; flex-wrap: wrap; justify-content: center; align-items: center; min-height: 62px; }
 .deck-zone   { position: relative; display: flex; align-items: center; }
 
-/* ── Thief deck card ── */
+/* ── Deck card — branded card-back image ── */
 .deck-card {
   position: relative;
   width: 62px; height: 94px;
-  background: linear-gradient(160deg, #0d1d58 0%, #070d20 100%);
+  background: url('/card-back-hero.jpg') center/cover no-repeat;
   border: 1.5px solid var(--gold);
   border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
   box-shadow:
-    0 0 0 1px rgba(212,175,55,.15),
-    0 0 14px rgba(212,175,55,.2),
+    0 0 0 1px rgba(212,175,55,.25),
+    0 0 14px rgba(212,175,55,.22),
     0 4px 14px rgba(0,0,0,.6);
-  overflow: visible;
+  overflow: hidden;
   cursor: default;
   transition: box-shadow .25s;
 }
 .deck-card:hover {
   box-shadow:
-    0 0 0 1px rgba(212,175,55,.3),
-    0 0 22px rgba(212,175,55,.35),
+    0 0 0 1px rgba(212,175,55,.4),
+    0 0 22px rgba(212,175,55,.38),
     0 4px 14px rgba(0,0,0,.6);
-}
-.deck-thief {
-  width: 56px; height: auto;
-  object-fit: contain;
-  filter: drop-shadow(0 1px 3px rgba(0,0,0,.5));
 }
 .deck-count {
   position: absolute; bottom: -7px; right: -8px;
@@ -1158,15 +1148,42 @@ body {
    RESPONSIVE
 ═══════════════════════════════════════ */
 @media (max-width: 480px) {
+  /* ── Hand cards: slightly smaller so more fit in a row ── */
   .hc { width: 50px; height: 78px; }
   .hc-rank { font-size: 12px; }
-  /* Smaller pip base font-size on mobile prevents symbols from overflowing */
-  .hc-pips { top: 20px; bottom: 20px; font-size: 12px; }
-  .hc-face-svg { height: calc(100% - 36px); }
+  .hc-suit { font-size: 9px; }
+  /* Tighter pip font-size so symbols don't overlap or overflow */
+  .hc-pips { top: 20px; bottom: 20px; font-size: 10px; }
+  .hc-face-svg { height: calc(100% - 32px); }
+  /* Table card pips */
+  .tc-pips { font-size: 7px; }
+  .tc-rank { font-size: 9px; }
+  .tc-suit-sm { font-size: 7px; }
+
+  /* ── Header: hide decorative text to free space for buttons ── */
+  .g-bar-brand { display: none; }
+  .g-bar-room  { display: none; }
+  .g-bar-phase { display: none; }
+  .turn-pill { max-width: 72px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .55rem; padding: .2rem .5rem; }
+
+  /* ── Chat: full-screen overlay on mobile ── */
   .chat-panel--open {
     width: 100%; position: absolute; right: 0; top: 0; bottom: 0; z-index: 200;
   }
-  .lobby-wordmark { font-size: 2.2rem; }
-  .thief-img { width: clamp(140px, 48vw, 180px); }
-  .tc-pips { font-size: 8px; }
+
+  /* ── Lobby ── */
+  .lobby-wordmark { font-size: 2rem; }
+  .lobby-hero-card { width: clamp(100px, 28vw, 130px); }
+  .lobby-content { gap: .55rem; padding: .85rem 1.2rem; }
+  .lobby-form-card { padding: .85rem .95rem; gap: .55rem; }
+}
+
+/* Very small viewport height (phones with short screens or landscape) */
+@media (max-height: 680px) {
+  .lobby-hero-card { width: clamp(80px, 22vw, 110px); }
+  .lobby-wordmark  { font-size: 1.8rem; }
+  .lobby-content   { gap: .45rem; padding: .7rem 1.2rem; }
+  .lobby-form-card { padding: .75rem .9rem; gap: .48rem; }
+  .lf-input        { padding: .5rem .8rem; }
+  .lf-btn          { padding: .55rem 1rem; }
 }
