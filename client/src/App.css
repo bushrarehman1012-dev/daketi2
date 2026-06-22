@@ -105,8 +105,7 @@ body {
 .icon-btn:hover     { background: rgba(255,255,255,.12); border-color: var(--border-gold); }
 .icon-btn--active   { background: rgba(26,63,170,.4); border-color: rgba(38,85,204,.6); }
 
-/* Mic button */
-.mic-btn { position: relative; }
+/* Mic / voice button states */
 .mic-btn--on {
   background: rgba(26,63,170,.5); border-color: var(--royal-lt);
   box-shadow: 0 0 10px rgba(26,63,170,.4);
@@ -124,7 +123,28 @@ body {
   from { box-shadow: 0 0 8px rgba(38,85,204,.5); }
   to   { box-shadow: 0 0 18px rgba(38,85,204,.9), 0 0 0 2px var(--royal-lt); }
 }
-.voice-err { color: #ff9090; font-size: var(--fs-xs); margin-left: .25rem; }
+/* Voice buttons — always 3, idle state when voice not active */
+.vbtn--off   { opacity: 0.22; pointer-events: none; cursor: default; }
+.vbtn--leave { color: #ff9090; }
+
+/* ── Floating game toasts — overlay, zero layout impact ── */
+.game-toast {
+  position: fixed;
+  top: 52px; left: 50%; transform: translateX(-50%);
+  z-index: 700;
+  border-radius: 8px; padding: .38rem 1.1rem;
+  font-size: var(--fs-xs); pointer-events: none;
+  white-space: nowrap; max-width: 92vw;
+  overflow: hidden; text-overflow: ellipsis;
+  animation: toastIn .2s ease-out;
+}
+.game-toast--err  { background: rgba(80,8,8,.93); color: #ff9090; border: 1px solid rgba(180,30,30,.5); }
+.game-toast--ok   { background: rgba(10,30,80,.93); color: #80c0ff; border: 1px solid rgba(26,63,170,.5); }
+.game-toast--hint { background: rgba(14,30,72,.93); color: #aaccff; border: 1px solid rgba(26,63,170,.45); }
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(-8px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
 
 /* ═══════════════════════════════════════
    LOBBY — LANDING PAGE
@@ -454,11 +474,41 @@ body {
 }
 .tc-r { color: var(--red); }
 .tc-b { color: #111; }
-.tc-back {
-  background: url('/card-back-hero.jpg') center/cover no-repeat;
-  border-color: rgba(212,175,55,.6);
+/* Card back — CSS playing card design; works at any card size */
+.cbk {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 45% 38%, #0d1a42 0%, #090e28 55%, #050c1e 100%);
+  border-radius: inherit; overflow: hidden;
 }
-/* .tc-pat is no longer rendered inside face-down cards */
+.cbk-inner {
+  position: absolute; inset: 2.5px;
+  border: 1px solid rgba(212,175,55,.6);
+  border-radius: 3px;
+  display: flex; align-items: center; justify-content: center;
+}
+.cbk-c {
+  position: absolute;
+  font-size: .52em; color: rgba(212,175,55,.75);
+  line-height: 1; pointer-events: none;
+}
+.cbk-tl { top: 2px; left: 3px; }
+.cbk-tr { top: 2px; right: 3px; }
+.cbk-bl { bottom: 2px; left: 3px; }
+.cbk-br { bottom: 2px; right: 3px; }
+.cbk-spade {
+  font-size: 1.8em; color: rgba(212,175,55,.6);
+  text-shadow: 0 0 8px rgba(212,175,55,.35);
+  line-height: 1; pointer-events: none;
+}
+.cbk-thief {
+  width: 78%; height: 78%;
+  object-fit: contain; pointer-events: none;
+}
+
+.tc-back {
+  border-color: rgba(212,175,55,.6) !important;
+  overflow: hidden;
+}
 .tc-glow {
   box-shadow: 0 0 0 2px var(--gold), 0 0 14px rgba(212,175,55,.7);
   cursor: pointer;
@@ -525,15 +575,11 @@ body {
 .g-bar-room { font-size: var(--fs-xs); color: var(--text-dim); letter-spacing: .12em; }
 .g-bar-room strong { color: var(--text); }
 .g-bar-phase { font-size: var(--fs-xs); color: var(--text-dim); }
-/* Right section scrolls horizontally on mobile so chat button stays visible */
+/* Right section — fixed button count, never scrolls, never shifts */
 .g-bar-right {
-  margin-left: auto; display: flex; align-items: center; gap: .35rem;
-  overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;
-  flex-shrink: 1; min-width: 0;
+  margin-left: auto; display: flex; align-items: center; gap: .3rem;
+  flex-shrink: 0;
 }
-.g-bar-right::-webkit-scrollbar { display: none; }
-/* Voice group — inlined buttons when voice is active */
-.voice-group { display: flex; align-items: center; gap: .25rem; flex-shrink: 0; }
 
 /* Turn pill */
 .turn-pill {
@@ -548,16 +594,7 @@ body {
 }
 @keyframes pillpulse { 0%,100% { opacity:1 } 50% { opacity:.7 } }
 
-/* ── Feedback strip — fixed height so it never causes layout shift ── */
-.g-strip {
-  height: 28px; padding: 0 1rem;
-  display: flex; align-items: center; justify-content: center;
-  font-size: var(--fs-sm); text-align: center; flex-shrink: 0;
-  transition: background .18s, color .18s;
-}
-.g-strip--err    { background: rgba(80,8,8,.8); color: #ff9090; }
-.g-strip--ok     { background: rgba(10,30,70,.9); color: #80c0ff; }
-.g-strip--hidden { background: transparent; color: transparent; pointer-events: none; }
+/* g-strip removed — feedback now uses floating .game-toast overlay */
 
 /* ── Body ── */
 .g-body { flex: 1; display: flex; min-height: 0; overflow: hidden; }
@@ -602,17 +639,15 @@ body {
   animation: pillpulse 1.5s infinite;
 }
 
-/* ── Turn hint — fixed height to prevent layout shift when text changes ── */
+/* ── Turn status bar — always same height, static text, never shifts ── */
 .g-hint {
   background: rgba(26,63,170,.18); border: 1px solid rgba(26,63,170,.4);
   border-radius: 8px; padding: .22rem .75rem;
   font-size: var(--fs-xs); color: #aaccff; flex-shrink: 0;
-  height: 28px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+  height: 26px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
   display: flex; align-items: center;
 }
 .g-hint--idle { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.08); color: var(--text-dim); }
-.g-hint strong, .hint-card { color: var(--gold); font-weight: var(--fw-bold); }
-.g-hint em { color: #80c0ff; font-style: normal; font-weight: var(--fw-semi); }
 
 /* ── Opponents row ── */
 .g-opps { display: flex; gap: .45rem; flex-wrap: wrap; flex-shrink: 0; }
@@ -705,11 +740,10 @@ body {
 .floor-cards { display: flex; gap: .35rem; flex-wrap: wrap; justify-content: center; align-items: center; min-height: 62px; }
 .deck-zone   { position: relative; display: flex; align-items: center; }
 
-/* ── Deck card — branded card-back image ── */
+/* ── Deck card — card back component fills it, thief image inside ── */
 .deck-card {
   position: relative;
   width: 62px; height: 94px;
-  background: url('/card-back-hero.jpg') center/cover no-repeat;
   border: 1.5px solid var(--gold);
   border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
@@ -1148,23 +1182,24 @@ body {
    RESPONSIVE
 ═══════════════════════════════════════ */
 @media (max-width: 480px) {
-  /* ── Hand cards: slightly smaller so more fit in a row ── */
-  .hc { width: 50px; height: 78px; }
-  .hc-rank { font-size: 12px; }
-  .hc-suit { font-size: 9px; }
-  /* Tighter pip font-size so symbols don't overlap or overflow */
-  .hc-pips { top: 20px; bottom: 20px; font-size: 10px; }
-  .hc-face-svg { height: calc(100% - 32px); }
-  /* Table card pips */
-  .tc-pips { font-size: 7px; }
-  .tc-rank { font-size: 9px; }
-  .tc-suit-sm { font-size: 7px; }
+  /* ── Hand cards: fit more in a row ── */
+  .hc { width: 48px; height: 74px; }
+  .hc-rank { font-size: 11px; }
+  .hc-suit { font-size: 8px; }
+  /* Pip font-size reduced so symbols never overlap */
+  .hc-pips { top: 18px; bottom: 18px; font-size: 9px; }
+  .hc-face-svg { height: calc(100% - 28px); }
+  /* Table card pips — small and tight */
+  .tc-pips { font-size: 6px; }
+  .tc-rank { font-size: 8px; }
+  .tc-suit-sm { font-size: 6px; }
 
-  /* ── Header: hide decorative text to free space for buttons ── */
+  /* ── Header: hide decorative text to free space for the 6 fixed buttons ── */
   .g-bar-brand { display: none; }
   .g-bar-room  { display: none; }
   .g-bar-phase { display: none; }
-  .turn-pill { max-width: 72px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .55rem; padding: .2rem .5rem; }
+  .turn-pill { max-width: 64px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .52rem; padding: .18rem .45rem; }
+  .icon-btn  { padding: .26rem .48rem; font-size: .9rem; }
 
   /* ── Chat: full-screen overlay on mobile ── */
   .chat-panel--open {

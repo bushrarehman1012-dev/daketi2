@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import socket from '../socket.js';
 import Chat from './Chat.jsx';
 import { useVoiceChat } from '../hooks/useVoiceChat.js';
@@ -8,10 +8,29 @@ import { sfx } from '../utils/sounds.js';
 const SUIT = { hearts: '♥', diamonds: '♦', clubs: '♣', spades: '♠' };
 const RED  = new Set(['hearts', 'diamonds']);
 
-// ── Deck card — uses the branded card-back image ──────────────────────────────
+// ── Card Back — CSS design that scales cleanly at any card size ───────────────
+function CardBack({ withThief = false }) {
+  return (
+    <div className="cbk">
+      <div className="cbk-inner">
+        <span className="cbk-c cbk-tl">♠</span>
+        <span className="cbk-c cbk-tr">♥</span>
+        {withThief
+          ? <img src="/card-back-hero.jpg" className="cbk-thief" alt="" />
+          : <span className="cbk-spade">♠</span>
+        }
+        <span className="cbk-c cbk-bl">♦</span>
+        <span className="cbk-c cbk-br">♣</span>
+      </div>
+    </div>
+  );
+}
+
+// ── Deck card — large branded card with thief image ───────────────────────────
 function DeckCard({ count }) {
   return (
     <div className="deck-card">
+      <CardBack withThief />
       <div className="deck-count">{count}</div>
     </div>
   );
@@ -178,8 +197,7 @@ function HandCard({ card, selected, canPlay, isNew, onClick }) {
 }
 
 function TableCard({ card, faceDown, glow, pulsing, locked, onClick }) {
-  // Face-down: branded card back image, no pattern overlay needed
-  if (faceDown) return <div className="tc tc-back" />;
+  if (faceDown) return <div className="tc tc-back"><CardBack /></div>;
   if (!card)    return null;
   return (
     <div
@@ -260,13 +278,15 @@ function GameOver({ players, myId, highscores }) {
 
 // ── Main Game ─────────────────────────────────────────────────────────────────
 export default function Game({ state, myId, chatMessages, highscores, onLeave }) {
-  const [sel,      setSel]      = useState(null);
-  const [feedback, setFeedback] = useState('');
-  const [err,      setErr]      = useState('');
-  const [newId,    setNewId]    = useState(null);
-  const [chatOpen, setChatOpen] = useState(false);
+  const [sel,       setSel]      = useState(null);
+  const [feedback,  setFeedback] = useState('');
+  const [err,       setErr]      = useState('');
+  const [newId,     setNewId]    = useState(null);
+  const [chatOpen,  setChatOpen] = useState(false);
+  const [hintToast, setHintToast] = useState('');
 
-  const prevHandRef     = useRef([]);
+  const prevHandRef  = useRef([]);
+  const hintTimerRef = useRef(null);
   const prevStateRef    = useRef(null);
   const gameOverSfxDone = useRef(false);
 
@@ -328,7 +348,17 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
     });
   }
   function showErr(msg) { setErr(msg); setTimeout(() => setErr(''), 3000); }
-  function pick(card)   { if (!isMyTurn) return; setSel(prev => prev?.id === card.id ? null : card); }
+  function pick(card) {
+    if (!isMyTurn) return;
+    const next = sel?.id === card.id ? null : card;
+    setSel(next);
+    if (next) {
+      const msg = `${next.rank} ${SUIT[next.suit]} selected — pair to floor · stack · steal · or Drop`;
+      setHintToast(msg);
+      clearTimeout(hintTimerRef.current);
+      hintTimerRef.current = setTimeout(() => setHintToast(''), 2200);
+    }
+  }
 
   const canFloor   = c   => isMyTurn && !!sel && c.rank === sel.rank;
   const canPairOwn = lastSlot && !lastSlot.locked && isMyTurn && !!sel && lastSlot.topCard?.rank === sel.rank;
@@ -362,52 +392,49 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
           </div>
           <button className="icon-btn leave-btn" onClick={onLeave} title="Leave game">✕</button>
 
-          {/* Chat button always before voice so it's never pushed off screen on mobile */}
+          {/* Chat — always visible, always same position */}
           <button
             className={`icon-btn ${chatOpen ? 'icon-btn--active' : ''}`}
             onClick={() => setChatOpen(v => !v)}
             title="Chat"
           >💬</button>
 
-          {/* Voice — scrolls right on mobile if buttons overflow */}
-          {!voice.active ? (
-            <button className="icon-btn" onClick={voice.join} title="Join voice chat">🎤</button>
-          ) : (
-            <div className="voice-group">
-              <button
-                className={`icon-btn mic-btn ${voice.micMuted ? 'mic-btn--muted' : voice.talking ? 'mic-btn--talking' : 'mic-btn--on'}`}
-                onClick={voice.toggleMic}
-                title={voice.micMuted ? 'Unmute mic' : 'Mute mic'}
-              >{voice.micMuted ? '🔇' : '🎙️'}</button>
-              <button
-                className={`icon-btn ${voice.speakerMuted ? 'mic-btn--muted' : 'mic-btn--on'}`}
-                onClick={voice.toggleSpeaker}
-                title={voice.speakerMuted ? 'Unmute speaker' : 'Mute speaker'}
-              >{voice.speakerMuted ? '🔕' : '🔊'}</button>
-              <button className="icon-btn" onClick={voice.leave} title="Leave voice">📵</button>
-            </div>
-          )}
-          {voice.error && <span className="voice-err">{voice.error}</span>}
+          {/* Voice — always exactly 3 buttons so header width never changes */}
+          <button
+            className={`icon-btn vbtn ${!voice.active ? 'vbtn--off' : voice.micMuted ? 'mic-btn--muted' : voice.talking ? 'mic-btn--talking' : 'mic-btn--on'}`}
+            onClick={voice.active ? voice.toggleMic : voice.join}
+            title={!voice.active ? 'Join voice' : voice.micMuted ? 'Unmute mic' : 'Mute mic'}
+          >{!voice.active ? '🎤' : voice.micMuted ? '🔇' : '🎙️'}</button>
+          <button
+            className={`icon-btn vbtn ${!voice.active ? 'vbtn--off' : voice.speakerMuted ? 'mic-btn--muted' : 'mic-btn--on'}`}
+            onClick={() => voice.active && voice.toggleSpeaker()}
+            title={voice.speakerMuted ? 'Unmute speaker' : 'Mute speaker'}
+          >{voice.speakerMuted ? '🔕' : '🔊'}</button>
+          <button
+            className={`icon-btn vbtn ${!voice.active ? 'vbtn--off' : 'vbtn--leave'}`}
+            onClick={() => voice.active && voice.leave()}
+            title="Leave voice"
+          >📵</button>
         </div>
       </header>
 
-      {/* Feedback/error strip — fixed height so it doesn't cause layout shift */}
-      <div className={`g-strip ${err ? 'g-strip--err' : feedback ? 'g-strip--ok' : 'g-strip--hidden'}`}>
-        {err || feedback || ' '}
-      </div>
+      {/* Floating toasts — no layout space consumed */}
+      {(err || feedback) && (
+        <div className={`game-toast ${err ? 'game-toast--err' : 'game-toast--ok'}`}>
+          {err || feedback}
+        </div>
+      )}
+      {hintToast && (
+        <div className="game-toast game-toast--hint">{hintToast}</div>
+      )}
 
       {/* ── Body ────────────────────────────────────────────────────────── */}
       <div className="g-body">
         <div className="g-table">
 
-          {/* Hint row — fixed height so it doesn't shift layout when text changes */}
+          {/* Turn status — always same height, no content that can shift layout */}
           <div className={`g-hint ${!isMyTurn ? 'g-hint--idle' : ''}`}>
-            {isMyTurn
-              ? sel
-                ? <><strong className="hint-card">{sel.rank} {SUIT[sel.suit]}</strong> — pair to floor · your stack · steal · or Drop</>
-                : <>Your turn — tap a hand card to select</>
-              : <>{currentName}'s turn…</>
-            }
+            {isMyTurn ? <>Your turn — tap a hand card to select</> : <>{currentName}&apos;s turn…</>}
           </div>
 
           {state.phase === 'endgame' && (
@@ -437,7 +464,7 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
                   <div className="opp-hand-pile">
                     {Array.from({ length: Math.min(p.handCount, 5) }).map((_, i) => (
                       <div key={i} className="opp-facedown" style={{ marginLeft: i * 10 }}>
-                        <div className="tc tc-back opp-back" />
+                        <div className="tc tc-back opp-back"><CardBack /></div>
                       </div>
                     ))}
                   </div>
