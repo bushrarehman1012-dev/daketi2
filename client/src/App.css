@@ -161,9 +161,12 @@ body {
   display: flex; flex-direction: column; align-items: center; gap: .5rem;
 }
 .thief-img {
-  width: 220px; height: auto;
-  filter: drop-shadow(0 0 24px rgba(212,175,55,.25)) drop-shadow(0 6px 20px rgba(0,0,0,.7));
+  width: clamp(180px, 55vw, 260px); height: auto;
   display: block;
+  /* Fade the rectangular image background into the page — character stays sharp */
+  -webkit-mask-image: radial-gradient(ellipse 72% 78% at 50% 38%, black 38%, rgba(0,0,0,.85) 55%, rgba(0,0,0,.4) 72%, transparent 100%);
+  mask-image:         radial-gradient(ellipse 72% 78% at 50% 38%, black 38%, rgba(0,0,0,.85) 55%, rgba(0,0,0,.4) 72%, transparent 100%);
+  filter: drop-shadow(0 0 28px rgba(212,175,55,.22)) drop-shadow(0 6px 18px rgba(0,0,0,.55));
 }
 .lobby-brand { text-align: center; }
 .lobby-wordmark {
@@ -384,10 +387,10 @@ body {
   background: linear-gradient(165deg, #FFFFF8 0%, #FFF8DC 55%, #FFF2C0 100%);
   border: 1px solid #C8A060;
   box-shadow: 0 3px 10px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.9);
-  display: flex; flex-direction: column; justify-content: space-between;
-  padding: 4px 5px; flex-shrink: 0;
+  display: block; flex-shrink: 0;
   user-select: none;
   transition: transform .18s cubic-bezier(.2,.8,.2,1), box-shadow .18s;
+  overflow: hidden;
 }
 .hc-r  { color: var(--red); }
 .hc-b  { color: #111; }
@@ -403,9 +406,10 @@ body {
   65%  { transform: translateY(4px) scale(1.06); opacity: 1; }
   100% { transform: translateY(0); }
 }
-.hc-corner { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.05; }
-.hc-tl { /* default */ }
-.hc-br { align-items: flex-end; transform: rotate(180deg); }
+/* Corners — absolute so they anchor to their respective card corners */
+.hc-corner { position: absolute; display: flex; flex-direction: column; align-items: center; line-height: 1.05; }
+.hc-tl { top: 4px; left: 5px; }
+.hc-br { bottom: 4px; right: 5px; transform: rotate(180deg); }
 .hc-rank { font-family: 'Georgia', serif; font-size: 14px; font-weight: 800; line-height: 1; }
 .hc-suit { font-size: 10px; line-height: 1; }
 
@@ -413,14 +417,16 @@ body {
 .hc-pips { position: absolute; top: 22px; bottom: 22px; left: 3px; right: 3px; pointer-events: none; }
 .hc-pip  { position: absolute; line-height: 1; display: inline-block; }
 
-/* Face cards (J Q K) */
-.hc-face {
-  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
-  display: flex; flex-direction: column; align-items: center;
-  pointer-events: none; gap: 1px;
+/* Face cards (J Q K) — two-headed SVG */
+.hc-face-svg {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(100% - 6px);
+  height: calc(100% - 44px);
+  pointer-events: none;
+  overflow: visible;
 }
-.hc-face-initial { font-family: 'Georgia', serif; font-size: 20px; font-weight: 900; line-height: 1; }
-.hc-face-sym     { font-size: 13px; line-height: 1; }
 
 /* ═══════════════════════════════════════
    TABLE CARDS (floor, stacks, deck)
@@ -930,11 +936,10 @@ body {
   .hc { width: 50px; height: 78px; }
   .hc-rank { font-size: 12px; }
   .hc-pips { top: 18px; bottom: 18px; }
-  .hc-face-initial { font-size: 17px; }
-  .hc-face-sym { font-size: 11px; }
+  .hc-face-svg { height: calc(100% - 36px); }
   .chat-panel--open {
     width: 100%; position: absolute; right: 0; top: 0; bottom: 0; z-index: 200;
   }
   .lobby-wordmark { font-size: 2.2rem; }
-  .thief-img { width: 160px; }
+  .thief-img { width: clamp(140px, 48vw, 180px); }
 }

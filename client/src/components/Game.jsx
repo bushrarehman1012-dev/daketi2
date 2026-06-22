@@ -39,29 +39,158 @@ const PIP_POS = {
   '10': [[27,10],[73,10],[50,26],[27,38],[73,38],[27,62],[73,62],[50,74],[27,90],[73,90]],
 };
 
-function CardPips({ rank, suit, small = false }) {
-  const sym  = SUIT[suit];
-  const pips = PIP_POS[rank];
+// Portrait illustration for top-half of a face card (fits in 56 × 25 SVG units)
+function Portrait({ rank, isRed }) {
+  const skin      = '#F5C598';
+  const hairDark  = '#3a1a00';
+  const robeColor = isRed ? '#8B0000' : '#1a1a6a';
+  const trimColor = isRed ? '#c84040' : '#3a3aaa';
 
-  if (!pips) {
-    if (small) return (
-      <div className="tc-face-center">
-        <span style={{ fontFamily:'Georgia,serif', fontSize:'12px', fontWeight:900, lineHeight:1 }}>{rank}</span>
-        <span style={{ fontSize:'9px', lineHeight:1 }}>{sym}</span>
-      </div>
-    );
+  if (rank === 'K') return (
+    <g>
+      {/* Crown */}
+      <path d="M18 9 L21 3 L25 7 L28 2 L31 7 L35 3 L38 9 L36 11 L20 11Z" fill="#D4AF37" stroke="#8a6000" strokeWidth=".5"/>
+      <ellipse cx="28" cy="11" rx="10" ry="2.2" fill="#D4AF37" stroke="#8a6000" strokeWidth=".4"/>
+      <circle cx="25" cy="5.5" r="1.2" fill="#CC1111"/>
+      <circle cx="28" cy="4" r="1.2" fill="#CC1111"/>
+      <circle cx="31" cy="5.5" r="1.2" fill="#CC1111"/>
+      {/* Face */}
+      <ellipse cx="28" cy="17" rx="8" ry="8.5" fill={skin} stroke="#c8a070" strokeWidth=".4"/>
+      {/* Eyebrows */}
+      <path d="M22 13 Q25 11.5 27.5 13" stroke={hairDark} strokeWidth="1.3" fill="none" strokeLinecap="round"/>
+      <path d="M28.5 13 Q31 11.5 34 13" stroke={hairDark} strokeWidth="1.3" fill="none" strokeLinecap="round"/>
+      {/* Eyes */}
+      <ellipse cx="24.8" cy="15" rx="2.2" ry="1.6" fill="white"/>
+      <circle cx="25.1" cy="15" r="1.2" fill="#1a0a00"/>
+      <circle cx="25.5" cy="14.4" r=".45" fill="white"/>
+      <ellipse cx="31.2" cy="15" rx="2.2" ry="1.6" fill="white"/>
+      <circle cx="31.5" cy="15" r="1.2" fill="#1a0a00"/>
+      <circle cx="31.9" cy="14.4" r=".45" fill="white"/>
+      {/* Nose */}
+      <path d="M27 19 Q28 20.5 29 19" stroke="#c09060" strokeWidth=".9" fill="none" strokeLinecap="round"/>
+      {/* Beard & moustache */}
+      <path d="M21 21 Q24 19.5 28 21 Q32 19.5 35 21" fill={hairDark} stroke={hairDark} strokeWidth=".4"/>
+      <path d="M20 22 Q24 20 28 22 Q32 20 36 22 Q33 26 28 27 Q23 26 20 22Z" fill={hairDark}/>
+      {/* Robe collar */}
+      <path d="M13 25 Q20 22 28 21.5 Q36 22 43 25Z" fill={robeColor}/>
+      <path d="M23 25 L26 21.5 M33 25 L30 21.5" stroke={trimColor} strokeWidth=".8"/>
+    </g>
+  );
+
+  if (rank === 'Q') return (
+    <g>
+      {/* Crown */}
+      <path d="M20 9 L22 4 L26 7.5 L28 3 L30 7.5 L34 4 L36 9 L34 11 L22 11Z" fill="#D4AF37" stroke="#8a6000" strokeWidth=".5"/>
+      <ellipse cx="28" cy="11" rx="8.5" ry="2" fill="#D4AF37" stroke="#8a6000" strokeWidth=".4"/>
+      <circle cx="25" cy="6" r="1.1" fill="#9900CC"/>
+      <circle cx="28" cy="4.5" r="1.1" fill="#9900CC"/>
+      <circle cx="31" cy="6" r="1.1" fill="#9900CC"/>
+      {/* Long hair */}
+      <ellipse cx="19" cy="19" rx="4.5" ry="9" fill={hairDark}/>
+      <ellipse cx="37" cy="19" rx="4.5" ry="9" fill={hairDark}/>
+      {/* Face */}
+      <ellipse cx="28" cy="17" rx="7.5" ry="8" fill={skin} stroke="#c8a070" strokeWidth=".4"/>
+      {/* Eyebrows — arched */}
+      <path d="M22.5 13 Q25 11.5 27 13" stroke={hairDark} strokeWidth="1" fill="none" strokeLinecap="round"/>
+      <path d="M29 13 Q31 11.5 33.5 13" stroke={hairDark} strokeWidth="1" fill="none" strokeLinecap="round"/>
+      {/* Eyes with lashes */}
+      <ellipse cx="24.5" cy="15" rx="2" ry="1.5" fill="white"/>
+      <circle cx="24.8" cy="15" r="1.1" fill="#2a0050"/>
+      <circle cx="25.2" cy="14.4" r=".4" fill="white"/>
+      <path d="M22.5 13.5 L23 12.5 M24.5 13 L24.5 12 M26.5 13.5 L26 12.5" stroke={hairDark} strokeWidth=".8" strokeLinecap="round"/>
+      <ellipse cx="31.5" cy="15" rx="2" ry="1.5" fill="white"/>
+      <circle cx="31.8" cy="15" r="1.1" fill="#2a0050"/>
+      <circle cx="32.2" cy="14.4" r=".4" fill="white"/>
+      <path d="M29.5 13.5 L30 12.5 M31.5 13 L31.5 12 M33.5 13.5 L33 12.5" stroke={hairDark} strokeWidth=".8" strokeLinecap="round"/>
+      {/* Nose */}
+      <path d="M27.2 18.5 Q28 20 28.8 18.5" stroke="#c09060" strokeWidth=".8" fill="none" strokeLinecap="round"/>
+      {/* Lips */}
+      <path d="M24.5 22 Q28 24 31.5 22" stroke="#c06080" strokeWidth="1.4" fill="none" strokeLinecap="round"/>
+      <path d="M24.5 22 Q28 20.5 31.5 22" stroke="#e08090" strokeWidth=".7" fill="none" strokeLinecap="round"/>
+      {/* Dress neckline */}
+      <path d="M14 25 Q21 22.5 28 22 Q35 22.5 42 25Z" fill={robeColor}/>
+      <path d="M22 25 L25 22.5 M34 25 L31 22.5" stroke={trimColor} strokeWidth=".8"/>
+    </g>
+  );
+
+  // Jack
+  return (
+    <g>
+      {/* Feathered hat brim */}
+      <ellipse cx="28" cy="10" rx="13" ry="2.5" fill={robeColor}/>
+      {/* Hat body */}
+      <path d="M16 10 Q18 5 28 4 Q38 5 40 10Z" fill={robeColor}/>
+      {/* Feather */}
+      <path d="M39 8 Q46 2 48 6 Q45 9 40 11Z" fill={isRed ? '#ff6060' : '#6080ff'} opacity=".85"/>
+      <path d="M39 8 Q44 4 46 7" stroke="rgba(255,255,255,.4)" strokeWidth=".7" fill="none" strokeLinecap="round"/>
+      {/* Hair peeking from hat */}
+      <path d="M17 10 Q20 8 22 11" stroke={hairDark} strokeWidth="2.8" fill="none" strokeLinecap="round"/>
+      <path d="M34 11 Q36 8 39 10" stroke={hairDark} strokeWidth="2.8" fill="none" strokeLinecap="round"/>
+      {/* Face — younger, narrower */}
+      <ellipse cx="28" cy="17.5" rx="7" ry="7.5" fill={skin} stroke="#c8a070" strokeWidth=".4"/>
+      {/* Eyebrows */}
+      <path d="M23 14 Q25.5 12.5 27.5 13.5" stroke={hairDark} strokeWidth="1.1" fill="none" strokeLinecap="round"/>
+      <path d="M28.5 13.5 Q30.5 12.5 33 14" stroke={hairDark} strokeWidth="1.1" fill="none" strokeLinecap="round"/>
+      {/* Eyes */}
+      <ellipse cx="25" cy="16" rx="2" ry="1.5" fill="white"/>
+      <circle cx="25.3" cy="16" r="1.1" fill="#1a2848"/>
+      <circle cx="25.7" cy="15.3" r=".4" fill="white"/>
+      <ellipse cx="31" cy="16" rx="2" ry="1.5" fill="white"/>
+      <circle cx="31.3" cy="16" r="1.1" fill="#1a2848"/>
+      <circle cx="31.7" cy="15.3" r=".4" fill="white"/>
+      {/* Nose */}
+      <path d="M27.2 19.5 Q28 21 28.8 19.5" stroke="#c09060" strokeWidth=".8" fill="none" strokeLinecap="round"/>
+      {/* Smirk */}
+      <path d="M24.5 22.5 Q28 24.5 31.5 23" stroke="#8a4030" strokeWidth="1.2" fill="none" strokeLinecap="round"/>
+      {/* Collar & ruffles */}
+      <path d="M15 25 Q22 22.5 28 22 Q34 22.5 41 25Z" fill={robeColor}/>
+      <path d="M24 25 Q26 22 28 24 Q30 22 32 25" stroke={trimColor} strokeWidth=".9" fill="none"/>
+    </g>
+  );
+}
+
+// Two-headed face card with portrait illustrations
+function FaceCard({ rank, suit, small = false }) {
+  const sym   = SUIT[suit];
+  const isRed = RED.has(suit);
+  const c     = isRed ? '#C80000' : '#111111';
+
+  if (small) {
     return (
-      <div className="hc-face">
-        <span className="hc-face-initial">{rank}</span>
-        <span className="hc-face-sym">{sym}</span>
+      <div className="tc-face-center">
+        <span style={{ fontFamily:'Georgia,serif', fontSize:'11px', fontWeight:900, color:c, lineHeight:1 }}>{rank}</span>
+        <span style={{ fontSize:'8px', color:c, lineHeight:1 }}>{sym}</span>
       </div>
     );
   }
 
+  return (
+    <svg className="hc-face-svg" viewBox="0 0 56 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Faint card-face border */}
+      <rect x="1" y="1" width="54" height="48" rx="3" stroke={c} strokeWidth=".4" opacity=".15"/>
+      {/* Top portrait */}
+      <Portrait rank={rank} isRed={isRed} />
+      {/* Divider */}
+      <line x1="4" y1="25" x2="52" y2="25" stroke={c} strokeWidth=".6" opacity=".2"/>
+      {/* Bottom portrait — 180° rotated copy */}
+      <g transform="translate(56,50) rotate(180)">
+        <Portrait rank={rank} isRed={isRed} />
+      </g>
+    </svg>
+  );
+}
+
+function CardPips({ rank, suit, small = false }) {
+  const sym  = SUIT[suit];
+  const pips = PIP_POS[rank];
+
+  // Face card (J / Q / K) — no pip positions defined
+  if (!pips) return <FaceCard rank={rank} suit={suit} small={small} />;
+
   const n  = pips.length;
   const fs = small
-    ? (n <= 1 ? 14 : n <= 4 ? 11 : 8)
-    : (n <= 1 ? 24 : n <= 4 ? 18 : n <= 6 ? 15 : 13);
+    ? (n <= 1 ? 18 : n <= 4 ? 11 : 8)
+    : (n <= 1 ? 36 : n <= 4 ? 18 : n <= 6 ? 15 : 13);  // Ace gets large 36px pip
 
   return (
     <div className={small ? 'tc-pips' : 'hc-pips'}>

@@ -11,7 +11,7 @@ const server = http.createServer(app);
 const io     = new Server(server, {
   cors: { origin: '*', methods: ['GET','POST'] },
   pingInterval: 25000,
-  pingTimeout:  60000, // generous timeout — prevents tab-switch / mobile background disconnects
+  pingTimeout:  120000, // 2 min — mobile browsers can pause JS longer than 60s
 });
 
 app.use(cors());
@@ -20,7 +20,24 @@ app.get('/health', (_, res) => res.json({ ok: true }));
 const rooms        = new Map();
 const onlineUsers  = new Map(); // socketId → { name }
 const reconnectBuf = new Map(); // socketId → { roomId, name, timer }
-const RECONNECT_MS = 10_000;   // 10s grace window for tab switches / mobile backgrounding
+
+// Timeout constants — all in milliseconds, easy to tune
+const RECONNECT_MS    = 3 * 60 * 1000;  // 3 min — grace window before treating disconnect as a leave
+const IDLE_CLEANUP_MS = 15 * 60 * 1000; // 15 min — destroy room after all players gone this long
+
+// Periodic idle-room cleanup: runs every 5 min, deletes rooms where every player
+// has been disconnected (not in onlineUsers, not in reconnectBuf) for 15+ minutes.
+setInterval(() => {
+  const now = Date.now();
+  for (const [roomId, room] of rooms) {
+    if (!room.lastActivity) { room.lastActivity = now; continue; }
+    const anyAlive = room.players.some(p => onlineUsers.has(p.id) || reconnectBuf.has(p.id));
+    if (!anyAlive && now - room.lastActivity > IDLE_CLEANUP_MS) {
+      console.log('idle-room cleanup', roomId);
+      rooms.delete(roomId);
+    }
+  }
+}, 5 * 60 * 1000);
 
 function broadcastOnlineUsers() {
   const list = [...onlineUsers.entries()].map(([sid, u]) => ({ socketId: sid, name: u.name }));
@@ -108,7 +125,10 @@ io.on('connection', socket => {
 
     if (name) onlineUsers.set(socket.id, { name });
     broadcastOnlineUsers();
+    room.lastActivity = Date.now();
     broadcast(room);
+    // Notify the other player that their opponent is back
+    socket.to(buf.roomId).emit('opponent_reconnected', { name: buf.name || name });
     console.log('reconnected', prevSocketId, '→', socket.id);
   });
 
@@ -177,6 +197,7 @@ io.on('connection', socket => {
       const room = rooms.get(socket.data.roomId);
       if (!room) throw new Error('Not in a room');
       room.handleAction(socket.id, action);
+      room.lastActivity = Date.now();
       broadcast(room);
 
       // When game finishes: save scores and broadcast hall of fame
@@ -220,14 +241,23 @@ io.on('connection', socket => {
     io.to(targetId).emit('webrtc_signal', { fromId: socket.id, type, data });
   });
 
+  // Client heartbeat — keeps lastActivity fresh so idle-cleanup doesn't fire early
+  socket.on('heartbeat', () => {
+    const room = rooms.get(socket.data.roomId);
+    if (room) room.lastActivity = Date.now();
+  });
+
   socket.on('disconnect', () => {
     const roomId = socket.data.roomId;
     const name   = socket.data.displayName;
 
     if (roomId) {
       const room = rooms.get(roomId);
-      // Only buffer if game is active — tab switches / mobile backgrounding
+      // Buffer ALL active-game disconnects — tab switches, mobile sleep, brief drops.
+      // Only after RECONNECT_MS (3 min) with no return do we treat it as a real leave.
       if (room && (room.phase === 'playing' || room.phase === 'endgame')) {
+        // Tell the other player their opponent temporarily lost connection
+        socket.to(roomId).emit('opponent_temp_disconnected', { name: name || 'Opponent' });
         const timer = setTimeout(() => {
           reconnectBuf.delete(socket.id);
           handlePlayerLeave(socket.id, roomId);
@@ -235,8 +265,9 @@ io.on('connection', socket => {
           broadcastOnlineUsers();
         }, RECONNECT_MS);
         reconnectBuf.set(socket.id, { roomId, name, timer });
-        console.log('disconnect (buffered)', socket.id);
-        return; // don't kick yet
+        room.lastActivity = Date.now();
+        console.log('disconnect buffered (3 min grace)', socket.id);
+        return; // do not remove from room yet
       }
       handlePlayerLeave(socket.id, roomId);
     }
