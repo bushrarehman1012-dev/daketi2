@@ -13,8 +13,10 @@ const io     = new Server(server, { cors: { origin: '*', methods: ['GET','POST']
 app.use(cors());
 app.get('/health', (_, res) => res.json({ ok: true }));
 
-const rooms      = new Map();
-const onlineUsers = new Map(); // socketId → { name }
+const rooms        = new Map();
+const onlineUsers  = new Map(); // socketId → { name }
+const reconnectBuf = new Map(); // socketId → { roomId, name, timer }
+const RECONNECT_MS = 10_000;   // 10s grace window for tab switches / mobile backgrounding
 
 function broadcastOnlineUsers() {
   const list = [...onlineUsers.entries()].map(([sid, u]) => ({ socketId: sid, name: u.name }));
@@ -79,6 +81,32 @@ io.on('connection', socket => {
 
   // Send current online users to the newly connected socket
   socket.emit('online_users', [...onlineUsers.entries()].map(([sid, u]) => ({ socketId: sid, name: u.name })));
+
+  // Reconnect: client sends previous socket ID so we can restore their room slot
+  socket.on('reconnect_player', ({ prevSocketId, name }) => {
+    const buf = reconnectBuf.get(prevSocketId);
+    if (!buf) return; // grace window expired or never buffered
+    clearTimeout(buf.timer);
+    reconnectBuf.delete(prevSocketId);
+
+    const room = rooms.get(buf.roomId);
+    if (!room) return;
+
+    // Swap socket ID in the room
+    const player = room.players.find(p => p.id === prevSocketId);
+    if (player) {
+      player.id = socket.id;
+      if (room.hostId === prevSocketId) room.hostId = socket.id;
+    }
+    socket.data.roomId      = buf.roomId;
+    socket.data.displayName = buf.name || name;
+    socket.join(buf.roomId);
+
+    if (name) onlineUsers.set(socket.id, { name });
+    broadcastOnlineUsers();
+    broadcast(room);
+    console.log('reconnected', prevSocketId, '→', socket.id);
+  });
 
   socket.on('register_online', ({ name }) => {
     if (!name?.trim()) return;
@@ -190,7 +218,25 @@ io.on('connection', socket => {
 
   socket.on('disconnect', () => {
     const roomId = socket.data.roomId;
-    if (roomId) handlePlayerLeave(socket.id, roomId);
+    const name   = socket.data.displayName;
+
+    if (roomId) {
+      const room = rooms.get(roomId);
+      // Only buffer if game is active — tab switches / mobile backgrounding
+      if (room && (room.phase === 'playing' || room.phase === 'endgame')) {
+        const timer = setTimeout(() => {
+          reconnectBuf.delete(socket.id);
+          handlePlayerLeave(socket.id, roomId);
+          onlineUsers.delete(socket.id);
+          broadcastOnlineUsers();
+        }, RECONNECT_MS);
+        reconnectBuf.set(socket.id, { roomId, name, timer });
+        console.log('disconnect (buffered)', socket.id);
+        return; // don't kick yet
+      }
+      handlePlayerLeave(socket.id, roomId);
+    }
+
     onlineUsers.delete(socket.id);
     broadcastOnlineUsers();
     console.log('disconnect', socket.id);

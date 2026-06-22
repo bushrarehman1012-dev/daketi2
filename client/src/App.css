@@ -407,7 +407,19 @@ body {
 .hc-br { align-items: flex-end; transform: rotate(180deg); }
 .hc-rank { font-family: 'Georgia', serif; font-size: 14px; font-weight: 800; line-height: 1; }
 .hc-suit { font-size: 10px; line-height: 1; }
-.hc-big  { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 26px; pointer-events: none; }
+
+/* Pip layout */
+.hc-pips { position: absolute; top: 20px; bottom: 20px; left: 4px; right: 4px; pointer-events: none; }
+.hc-pip  { position: absolute; line-height: 1; display: inline-block; }
+
+/* Face cards (J Q K) */
+.hc-face {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  display: flex; flex-direction: column; align-items: center;
+  pointer-events: none; gap: 1px;
+}
+.hc-face-initial { font-family: 'Georgia', serif; font-size: 20px; font-weight: 900; line-height: 1; }
+.hc-face-sym     { font-size: 13px; line-height: 1; }
 
 /* ═══════════════════════════════════════
    TABLE CARDS (floor, stacks, deck)
@@ -624,14 +636,17 @@ body {
   display: flex; flex-direction: column; gap: .3rem; flex-shrink: 0;
   position: relative; overflow: hidden;
 }
-/* Suit watermarks on felt */
-.felt-suits {
-  position: absolute; inset: 0; display: flex; align-items: center; justify-content: space-around;
-  pointer-events: none;
+/* Corner suit icons */
+.felt-corner {
+  position: absolute; font-size: 1.5rem; line-height: 1;
+  pointer-events: none; user-select: none; opacity: .22;
 }
-.fs { font-size: 3rem; line-height: 1; }
-.fs-r { color: rgba(255,80,80,.06); }
-.fs-b { color: rgba(220,220,255,.04); }
+.felt-corner--tl { top: 7px;  left: 9px; }
+.felt-corner--tr { top: 7px;  right: 9px; }
+.felt-corner--bl { bottom: 7px; left: 9px; }
+.felt-corner--br { bottom: 7px; right: 9px; }
+.fs-r { color: #ff6060; }
+.fs-b { color: #ccccff; }
 
 .felt-row { display: flex; gap: 1.5rem; align-items: flex-start; justify-content: center; flex-wrap: wrap; position: relative; z-index: 1; }
 .felt-col { display: flex; flex-direction: column; align-items: center; gap: .3rem; }
@@ -645,7 +660,7 @@ body {
 /* ── Thief deck card ── */
 .deck-card {
   position: relative;
-  width: 72px; height: 84px;
+  width: 62px; height: 94px;
   background: linear-gradient(160deg, #0d1d58 0%, #070d20 100%);
   border: 1.5px solid var(--gold);
   border-radius: 8px;
@@ -665,7 +680,7 @@ body {
     0 4px 14px rgba(0,0,0,.6);
 }
 .deck-thief {
-  width: 68px; height: 52px;
+  width: 58px; height: 72px;
   filter: drop-shadow(0 1px 3px rgba(0,0,0,.5));
 }
 .deck-count {
@@ -900,7 +915,9 @@ body {
 @media (max-width: 480px) {
   .hc { width: 50px; height: 78px; }
   .hc-rank { font-size: 12px; }
-  .hc-big  { font-size: 20px; }
+  .hc-pips { top: 18px; bottom: 18px; }
+  .hc-face-initial { font-size: 17px; }
+  .hc-face-sym { font-size: 11px; }
   .chat-panel--open {
     width: 100%; position: absolute; right: 0; top: 0; bottom: 0; z-index: 200;
   }

@@ -14,7 +14,7 @@ function DeckCard({ count }) {
   return (
     <div className="deck-card">
       {/* Front-facing thief bust — same character as the lobby logo, cropped to head+hat+coat top */}
-      <svg className="deck-thief" viewBox="8 0 224 170" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg className="deck-thief" viewBox="8 0 180 168" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <pattern id="dcHS" width="200" height="12" patternUnits="userSpaceOnUse">
             <rect width="200" height="6" fill="transparent"/>
@@ -72,6 +72,53 @@ function DeckCard({ count }) {
   );
 }
 
+// ── Card pip layouts — [x%, y%, flipBottomHalf] ──────────────────────────────
+// x/y are % positions within the pip area; flip=true rotates the symbol 180°
+const PIP_POS = {
+  'A':  [[50,50,false]],
+  '2':  [[50,17,false],[50,83,true]],
+  '3':  [[50,13,false],[50,50,false],[50,87,true]],
+  '4':  [[24,18,false],[76,18,false],[24,82,true],[76,82,true]],
+  '5':  [[24,18,false],[76,18,false],[50,50,false],[24,82,true],[76,82,true]],
+  '6':  [[24,16,false],[76,16,false],[24,50,false],[76,50,false],[24,84,true],[76,84,true]],
+  '7':  [[24,13,false],[76,13,false],[50,31,false],[24,52,false],[76,52,false],[24,78,true],[76,78,true]],
+  '8':  [[24,11,false],[76,11,false],[50,28,false],[24,50,false],[76,50,true],[50,72,true],[24,89,true],[76,89,true]],
+  '9':  [[24,10,false],[76,10,false],[24,32,false],[76,32,false],[50,50,false],[24,68,true],[76,68,true],[24,90,true],[76,90,true]],
+  '10': [[24,8,false],[76,8,false],[50,23,false],[24,38,false],[76,38,false],[24,62,true],[76,62,true],[50,77,true],[24,92,true],[76,92,true]],
+};
+
+function pipSize(count) {
+  if (count === 1) return 20;
+  if (count <= 4)  return 15;
+  if (count <= 6)  return 13;
+  return 11;
+}
+
+function CardCenter({ rank, suit }) {
+  const sym  = SUIT[suit];
+  const pips = PIP_POS[rank];
+
+  // Face cards — large initial + suit
+  if (!pips) return (
+    <div className="hc-face">
+      <span className="hc-face-initial">{rank}</span>
+      <span className="hc-face-sym">{sym}</span>
+    </div>
+  );
+
+  const fs = `${pipSize(pips.length)}px`;
+  return (
+    <div className="hc-pips">
+      {pips.map(([x, y, flip], i) => (
+        <span key={i} className="hc-pip" style={{
+          left: `${x}%`, top: `${y}%`, fontSize: fs,
+          transform: `translate(-50%,-50%)${flip ? ' rotate(180deg)' : ''}`,
+        }}>{sym}</span>
+      ))}
+    </div>
+  );
+}
+
 // ── Card components ──────────────────────────────────────────────────────────
 
 function HandCard({ card, selected, canPlay, isNew, onClick }) {
@@ -83,7 +130,7 @@ function HandCard({ card, selected, canPlay, isNew, onClick }) {
       title={`${card.rank} of ${card.suit}`}
     >
       <div className="hc-corner hc-tl"><span className="hc-rank">{card.rank}</span><span className="hc-suit">{SUIT[card.suit]}</span></div>
-      <span className="hc-big">{SUIT[card.suit]}</span>
+      <CardCenter rank={card.rank} suit={card.suit} />
       <div className="hc-corner hc-br"><span className="hc-rank">{card.rank}</span><span className="hc-suit">{SUIT[card.suit]}</span></div>
     </div>
   );
@@ -259,9 +306,7 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
   // ── Derived display ───────────────────────────────────────────────────────
   const currentName    = state.players.find(p => p.id === state.currentPlayerId)?.name;
   const totalHandCards = state.players.reduce((s, p) => s + p.handCount, 0);
-  const phaseTag       = state.phase === 'endgame'
-    ? `⚡ ENDGAME · ${totalHandCards} cards left`
-    : `🂠 ${state.deckCount} in deck`;
+  const phaseTag       = state.phase === 'endgame' ? `⚡ ENDGAME` : null;
 
   if (state.phase === 'finished') {
     if (!gameOverSfxDone.current) {
@@ -280,7 +325,7 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
       <header className="g-bar">
         <span className="g-bar-brand">♠ DAKETI</span>
         <span className="g-bar-room">Room <strong>{state.roomId}</strong></span>
-        <span className="g-bar-phase">{phaseTag}</span>
+        {phaseTag && <span className="g-bar-phase">{phaseTag}</span>}
         <div className="g-bar-right">
           <div className={`turn-pill ${isMyTurn ? 'turn-pill--mine' : ''}`}>
             {isMyTurn ? '⭐ Your Turn' : `${currentName}'s turn`}
@@ -382,12 +427,10 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
 
           {/* ── Felt ─────────────────────────────────────────────────── */}
           <div className="g-felt">
-            <div className="felt-suits" aria-hidden>
-              <span className="fs fs-b">♠</span>
-              <span className="fs fs-r">♦</span>
-              <span className="fs fs-b">♣</span>
-              <span className="fs fs-r">♥</span>
-            </div>
+            <span className="felt-corner felt-corner--tl fs-b" aria-hidden>♠</span>
+            <span className="felt-corner felt-corner--tr fs-r" aria-hidden>♥</span>
+            <span className="felt-corner felt-corner--bl fs-r" aria-hidden>♦</span>
+            <span className="felt-corner felt-corner--br fs-b" aria-hidden>♣</span>
             <div className="felt-row">
               <div className="felt-col">
                 <div className="felt-lbl">FLOOR</div>
