@@ -1,19 +1,29 @@
 import { useState, useEffect } from 'react';
 import socket from '../socket.js';
 
-function ThiefLogo() {
-  return <img src="/daketi-thief-hero-blended.jpg" className="thief-img" alt="Daketi Thief" />;
+function CardLogo() {
+  return (
+    <div className="lobby-card-logo">
+      <div className="lcl-corner lcl-tl">
+        <span className="lcl-rank">A</span>
+        <span className="lcl-suit">♠</span>
+      </div>
+      <span className="lcl-center">♠</span>
+      <div className="lcl-corner lcl-br">
+        <span className="lcl-rank">A</span>
+        <span className="lcl-suit">♠</span>
+      </div>
+    </div>
+  );
 }
 
 export default function Lobby({ onJoined, onlineUsers = [], mySocketId, user, onOpenProfile }) {
-  // Logged-in users get their display name pre-filled and locked
   const [name,  setName]  = useState(() => user?.displayName || localStorage.getItem('daketi_name') || '');
   const [code,  setCode]  = useState('');
   const [err,   setErr]   = useState('');
   const [busy,  setBusy]  = useState(false);
-  const [tab,   setTab]   = useState('create'); // 'create' | 'join'
+  const [tab,   setTab]   = useState('create');
 
-  // Connect early and register online if we already have a saved name
   useEffect(() => {
     const saved = localStorage.getItem('daketi_name') || '';
     if (saved.trim().length >= 2) {
@@ -64,19 +74,22 @@ export default function Lobby({ onJoined, onlineUsers = [], mySocketId, user, on
 
   return (
     <div className="lobby-root">
-      {/* ── Background card suit decorations ── */}
+      {/* ── Background suit watermarks ── */}
       <div className="lobby-bg-suits" aria-hidden>
         <span>♠</span><span>♥</span><span>♦</span><span>♣</span>
       </div>
 
       <div className="lobby-content">
-        {/* ── Logo ── */}
-        <div className="lobby-logo-wrap">
-          <ThiefLogo />
-          <div className="lobby-brand">
-            <h1 className="lobby-wordmark">DAKETI</h1>
-            <p className="lobby-tagline">The Art of the Steal</p>
+        {/* ── Logo lockup: card + DAKETI title ── */}
+        <div className="lobby-header">
+          <div className="lobby-logo-lockup">
+            <CardLogo />
+            <div className="lobby-brand">
+              <h1 className="lobby-wordmark">DAKETI</h1>
+              <p className="lobby-tagline">The Art of the Steal</p>
+            </div>
           </div>
+
           {user && (
             <button className="lobby-profile-btn" onClick={onOpenProfile}>
               <span className="lobby-profile-av">{(user.displayName?.[0] || '?').toUpperCase()}</span>
@@ -86,9 +99,8 @@ export default function Lobby({ onJoined, onlineUsers = [], mySocketId, user, on
           )}
         </div>
 
-        {/* ── Card / Form ── */}
+        {/* ── Form card ── */}
         <div className="lobby-form-card">
-          {/* Name — locked if logged in (comes from account) */}
           <div className="lf-field">
             <label className="lf-label">Your Name</label>
             {user ? (
@@ -100,7 +112,6 @@ export default function Lobby({ onJoined, onlineUsers = [], mySocketId, user, on
             )}
           </div>
 
-          {/* Tabs */}
           <div className="lf-tabs">
             <button className={`lf-tab ${tab === 'create' ? 'lf-tab--active' : ''}`} onClick={() => setTab('create')}>
               Create Room
