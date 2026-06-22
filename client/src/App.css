@@ -163,12 +163,12 @@ body {
 .thief-img {
   width: clamp(180px, 55vw, 260px); height: auto;
   display: block;
-  /* JPEG image has checkerboard corners (no real alpha channel).
-     This light mask fades only the outermost corners so the checkerboard
-     doesn't show against the dark page — character body is fully unaffected. */
-  -webkit-mask-image: radial-gradient(ellipse 96% 98% at 52% 51%, black 86%, transparent 100%);
-  mask-image:         radial-gradient(ellipse 96% 98% at 52% 51%, black 86%, transparent 100%);
-  filter: drop-shadow(0 2px 24px rgba(212,175,55,.28)) drop-shadow(0 8px 20px rgba(0,0,0,.6));
+  /* True PNG with dark-blue background. mix-blend-mode:screen causes dark pixels
+     to merge with the equally-dark page, so the image background vanishes while
+     the gold/skin character colors (which are lighter) are fully preserved.
+     No mask needed — the image's own vignette fades naturally at the edges. */
+  mix-blend-mode: screen;
+  filter: drop-shadow(0 0 32px rgba(212,175,55,.35)) drop-shadow(0 10px 24px rgba(0,0,0,.55));
 }
 .lobby-brand { text-align: center; }
 .lobby-wordmark {
