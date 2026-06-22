@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import socket from '../socket.js';
 
 function ThiefLogo() {
@@ -103,17 +103,44 @@ function ThiefLogo() {
   );
 }
 
-export default function Lobby({ onJoined }) {
-  const [name,  setName]  = useState('');
+export default function Lobby({ onJoined, onlineUsers = [], mySocketId }) {
+  const [name,  setName]  = useState(() => localStorage.getItem('daketi_name') || '');
   const [code,  setCode]  = useState('');
   const [err,   setErr]   = useState('');
   const [busy,  setBusy]  = useState(false);
   const [tab,   setTab]   = useState('create'); // 'create' | 'join'
 
+  // Connect early and register online if we already have a saved name
+  useEffect(() => {
+    const saved = localStorage.getItem('daketi_name') || '';
+    if (saved.trim().length >= 2) {
+      if (!socket.connected) {
+        socket.connect();
+        socket.once('connect', () => socket.emit('register_online', { name: saved.trim() }));
+      } else {
+        socket.emit('register_online', { name: saved.trim() });
+      }
+    }
+  }, []);
+
+  function handleNameChange(e) {
+    const n = e.target.value;
+    setName(n);
+    localStorage.setItem('daketi_name', n.trim());
+    if (n.trim().length >= 2) {
+      if (!socket.connected) {
+        socket.connect();
+        socket.once('connect', () => socket.emit('register_online', { name: n.trim() }));
+      } else {
+        socket.emit('register_online', { name: n.trim() });
+      }
+    }
+  }
+
   function go(fn) {
     if (!name.trim()) { setErr('Enter your name first'); return; }
     setBusy(true); setErr('');
-    socket.connect();
+    if (!socket.connected) socket.connect();
     fn();
   }
 
@@ -155,7 +182,7 @@ export default function Lobby({ onJoined }) {
           <div className="lf-field">
             <label className="lf-label">Your Name</label>
             <input className="lf-input" placeholder="Enter your name…" maxLength={20}
-              value={name} onChange={e => setName(e.target.value)}
+              value={name} onChange={handleNameChange}
               onKeyDown={e => e.key === 'Enter' && (tab === 'create' ? create() : join())} />
           </div>
 
@@ -186,6 +213,12 @@ export default function Lobby({ onJoined }) {
 
           {err && <p className="lf-error">⚠ {err}</p>}
 
+          {onlineUsers.filter(u => u.socketId !== mySocketId).length > 0 && (
+            <div className="lf-online-chip">
+              <span className="lf-online-dot"/>
+              {onlineUsers.filter(u => u.socketId !== mySocketId).length} online now
+            </div>
+          )}
           <p className="lf-rules-hint">2–6 players · Steal, pair, lock — most sets wins</p>
         </div>
       </div>

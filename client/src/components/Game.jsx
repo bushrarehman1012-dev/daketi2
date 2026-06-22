@@ -171,7 +171,7 @@ function GameOver({ players, myId, highscores }) {
 
 // ── Main Game ─────────────────────────────────────────────────────────────────
 
-export default function Game({ state, myId, chatMessages, highscores }) {
+export default function Game({ state, myId, chatMessages, highscores, onLeave }) {
   const [sel,      setSel]      = useState(null);
   const [feedback, setFeedback] = useState('');
   const [err,      setErr]      = useState('');
@@ -274,6 +274,7 @@ export default function Game({ state, myId, chatMessages, highscores }) {
           <div className={`turn-pill ${isMyTurn ? 'turn-pill--mine' : ''}`}>
             {isMyTurn ? '⭐ Your Turn' : `${currentName}'s turn`}
           </div>
+          <button className="icon-btn leave-btn" onClick={onLeave} title="Leave game">✕ Leave</button>
           <button
             className={`icon-btn mic-btn ${voice.active?'mic-btn--on':''} ${voice.talking?'mic-btn--talking':''}`}
             onClick={voice.toggle}

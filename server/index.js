@@ -13,7 +13,28 @@ const io     = new Server(server, { cors: { origin: '*', methods: ['GET','POST']
 app.use(cors());
 app.get('/health', (_, res) => res.json({ ok: true }));
 
-const rooms = new Map();
+const rooms      = new Map();
+const onlineUsers = new Map(); // socketId → { name }
+
+function broadcastOnlineUsers() {
+  const list = [...onlineUsers.entries()].map(([sid, u]) => ({ socketId: sid, name: u.name }));
+  io.emit('online_users', list);
+}
+
+function handlePlayerLeave(socketId, roomId) {
+  const room = rooms.get(roomId);
+  if (!room) return;
+  const wasActive = room.phase === 'playing' || room.phase === 'endgame';
+  room.removePlayer(socketId);
+  if (room.players.length === 0) {
+    rooms.delete(roomId);
+  } else if (wasActive && room.players.length < 2) {
+    room.phase = 'abandoned';
+    broadcast(room);
+  } else {
+    broadcast(room);
+  }
+}
 
 // ── Highscore persistence ──────────────────────────────────────────────────
 
@@ -55,6 +76,35 @@ function broadcast(room) {
 
 io.on('connection', socket => {
   console.log('connect', socket.id);
+
+  // Send current online users to the newly connected socket
+  socket.emit('online_users', [...onlineUsers.entries()].map(([sid, u]) => ({ socketId: sid, name: u.name })));
+
+  socket.on('register_online', ({ name }) => {
+    if (!name?.trim()) return;
+    onlineUsers.set(socket.id, { name: name.trim() });
+    broadcastOnlineUsers();
+  });
+
+  socket.on('leave_room', (_, cb) => {
+    const roomId = socket.data.roomId;
+    if (!roomId) { cb?.({ ok: true }); return; }
+    handlePlayerLeave(socket.id, roomId);
+    socket.data.roomId = null;
+    socket.leave(roomId);
+    cb?.({ ok: true });
+  });
+
+  socket.on('invite_to_room', ({ targetSocketId, roomId }) => {
+    const from = onlineUsers.get(socket.id);
+    if (!from) return;
+    io.to(targetSocketId).emit('room_invite', { fromSocketId: socket.id, fromName: from.name, roomId });
+  });
+
+  socket.on('decline_invite', ({ fromSocketId }) => {
+    const from = onlineUsers.get(socket.id);
+    io.to(fromSocketId).emit('invite_declined', { byName: from?.name ?? 'Someone' });
+  });
 
   socket.on('create_room', ({ name }, cb) => {
     try {
@@ -140,12 +190,9 @@ io.on('connection', socket => {
 
   socket.on('disconnect', () => {
     const roomId = socket.data.roomId;
-    if (!roomId) return;
-    const room = rooms.get(roomId);
-    if (!room) return;
-    room.removePlayer(socket.id);
-    if (room.players.length === 0) rooms.delete(roomId);
-    else broadcast(room);
+    if (roomId) handlePlayerLeave(socket.id, roomId);
+    onlineUsers.delete(socket.id);
+    broadcastOnlineUsers();
     console.log('disconnect', socket.id);
   });
 });

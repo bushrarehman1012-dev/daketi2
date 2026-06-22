@@ -283,6 +283,92 @@ body {
 .btn-gold:hover:not(:disabled) { background: linear-gradient(135deg, #F0D060, #D4AF37); transform: translateY(-1px); }
 .btn-gold:disabled { opacity: .38; cursor: not-allowed; }
 
+/* Leave / back button */
+.btn-leave {
+  width: 100%; padding: .48rem 1rem;
+  background: transparent; border: 1px solid rgba(255,255,255,.1);
+  border-radius: 8px; color: var(--text-dim); font-size: var(--fs-sm);
+  cursor: pointer; transition: all .15s;
+}
+.btn-leave:hover { border-color: rgba(255,100,100,.4); color: #ff9090; }
+
+/* Leave button in game header */
+.leave-btn { font-size: var(--fs-xs) !important; color: var(--text-dim) !important; }
+.leave-btn:hover { color: #ff9090 !important; border-color: rgba(255,100,100,.4) !important; }
+
+/* ── Online chip (lobby landing) ── */
+.lf-online-chip {
+  display: flex; align-items: center; gap: .4rem;
+  font-size: var(--fs-xs); color: var(--text-dim);
+  padding: .3rem .6rem; background: rgba(40,180,80,.08);
+  border: 1px solid rgba(40,180,80,.2); border-radius: 99px;
+  align-self: center;
+}
+.lf-online-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #40c060; box-shadow: 0 0 6px rgba(40,200,80,.7);
+  animation: pillpulse 1.4s infinite;
+}
+
+/* ── Waiting room online users panel ── */
+.wr-online {
+  background: rgba(255,255,255,.03); border: 1px solid var(--border);
+  border-radius: 10px; padding: .6rem .75rem;
+  display: flex; flex-direction: column; gap: .35rem;
+}
+.wr-online-lbl {
+  font-size: var(--fs-2xs); font-weight: var(--fw-bold); color: var(--text-xs);
+  text-transform: uppercase; letter-spacing: .1em; margin-bottom: .1rem;
+}
+.wr-online-row {
+  display: flex; align-items: center; gap: .5rem;
+}
+.wr-online-name { flex: 1; font-size: var(--fs-sm); color: var(--text); }
+.invite-pill {
+  padding: .22rem .65rem; border-radius: 99px;
+  background: rgba(212,175,55,.15); border: 1px solid rgba(212,175,55,.4);
+  color: var(--gold); font-size: var(--fs-xs); font-weight: var(--fw-bold);
+  cursor: pointer; transition: all .15s;
+}
+.invite-pill:hover { background: rgba(212,175,55,.28); }
+
+/* ── Incoming invite toast ── */
+.invite-toast {
+  position: fixed; top: 1rem; right: 1rem; z-index: 9999;
+  animation: slideIn .3s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes slideIn {
+  from { transform: translateX(120%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+.invite-toast-inner {
+  display: flex; align-items: center; gap: .75rem;
+  background: linear-gradient(135deg, #0d1d58, #070d20);
+  border: 1px solid var(--border-gold);
+  border-radius: 14px; padding: .85rem 1rem;
+  box-shadow: var(--shadow), var(--glow-gold);
+  max-width: 320px;
+}
+.invite-toast-icon { font-size: 1.5rem; flex-shrink: 0; }
+.invite-toast-text { flex: 1; font-size: var(--fs-sm); color: var(--text); line-height: 1.4; }
+.invite-toast-text strong { color: var(--gold); }
+.invite-toast-actions { display: flex; gap: .35rem; flex-shrink: 0; }
+.invite-btn {
+  padding: .35rem .7rem; border-radius: 8px;
+  font-size: var(--fs-xs); font-weight: var(--fw-bold); cursor: pointer; border: none;
+  transition: all .15s;
+}
+.invite-btn--accept {
+  background: linear-gradient(135deg, #D4AF37, #A88910);
+  color: #1a0e00;
+}
+.invite-btn--accept:hover { background: linear-gradient(135deg, #F0D060, #D4AF37); }
+.invite-btn--decline {
+  background: rgba(255,255,255,.08); color: var(--text-dim);
+  border: 1px solid var(--border);
+}
+.invite-btn--decline:hover { background: rgba(255,80,80,.15); color: #ff9090; }
+
 /* ═══════════════════════════════════════
    HAND CARDS
 ═══════════════════════════════════════ */
