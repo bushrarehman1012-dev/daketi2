@@ -152,8 +152,8 @@ body {
 .lobby-content {
   position: relative; z-index: 1;
   display: flex; flex-direction: column; align-items: center;
-  gap: 1.5rem; padding: 1.5rem;
-  width: 100%; max-width: 400px;
+  gap: 1rem; padding: 1.5rem;
+  width: 100%; max-width: 480px;
 }
 
 /* Logo section */
@@ -161,14 +161,11 @@ body {
   display: flex; flex-direction: column; align-items: center; gap: .5rem;
 }
 .thief-img {
-  width: clamp(180px, 55vw, 260px); height: auto;
+  width: clamp(260px, 70vw, 480px); height: auto;
   display: block;
-  /* True PNG with dark-blue background. mix-blend-mode:screen causes dark pixels
-     to merge with the equally-dark page, so the image background vanishes while
-     the gold/skin character colors (which are lighter) are fully preserved.
-     No mask needed — the image's own vignette fades naturally at the edges. */
+  object-fit: contain;
   mix-blend-mode: screen;
-  filter: drop-shadow(0 0 32px rgba(212,175,55,.35)) drop-shadow(0 10px 24px rgba(0,0,0,.55));
+  filter: drop-shadow(0 0 40px rgba(212,175,55,.25));
 }
 .lobby-brand { text-align: center; }
 .lobby-wordmark {

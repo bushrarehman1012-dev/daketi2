@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import socket from '../socket.js';
 
 function ThiefLogo() {
-  return <img src="/thief.png" className="thief-img" alt="Daketi Thief" />;
+  return <img src="/daketi-thief-hero-blended.jpg" className="thief-img" alt="Daketi Thief" />;
 }
 
 export default function Lobby({ onJoined, onlineUsers = [], mySocketId, user, onOpenProfile }) {
