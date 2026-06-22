@@ -180,8 +180,12 @@ body {
 .lobby-hero-card {
   width: clamp(110px, 32vw, 160px);
   height: auto; display: block;
-  border-radius: 10px;
-  filter: drop-shadow(0 6px 24px rgba(0,0,0,.7)) drop-shadow(0 0 18px rgba(212,175,55,.22));
+  border-radius: 12px;
+  border: 2.5px solid rgba(212,175,55,.75);
+  box-shadow:
+    0 0 0 1.5px rgba(212,175,55,.2),
+    0 8px 28px rgba(0,0,0,.85),
+    0 0 28px rgba(212,175,55,.3);
 }
 
 /* ── Brand text ── */
@@ -687,9 +691,14 @@ body {
 .opp-facedown  { position: absolute; }
 .opp-back { transform: scale(.78); transform-origin: left top; }
 
-/* Single stealable top card */
+/* Stealable top card — fixed-height slot so opp area never shifts */
+.opp-topcard-slot {
+  height: 62px;
+  display: flex; align-items: flex-start;
+  position: relative; flex-shrink: 0;
+}
 .opp-topcard {
-  display: flex; flex-direction: column; align-items: center; gap: .2rem;
+  position: relative;
   cursor: default;
 }
 .opp-topcard--steal {
@@ -702,13 +711,16 @@ body {
   0%,100% { filter: drop-shadow(0 0 5px rgba(220,50,50,.6)); }
   50%      { filter: drop-shadow(0 0 12px rgba(220,50,50,.95)); }
 }
+/* STEAL label — absolute overlay, never adds to layout height */
 .steal-cta {
+  position: absolute; top: -18px; left: 50%; transform: translateX(-50%);
   font-size: var(--fs-2xs); font-weight: var(--fw-black); color: #ff6060;
-  letter-spacing: .1em; text-transform: uppercase;
+  letter-spacing: .1em; text-transform: uppercase; white-space: nowrap;
+  pointer-events: none;
   animation: pillpulse .7s infinite;
 }
 
-/* ── Felt area — flex:1 so it fills the middle, pushing my area to bottom ── */
+/* ── Felt area — fixed min-height so deck card always fully visible ── */
 .g-felt {
   background: var(--felt);
   border-radius: 14px;
@@ -716,7 +728,7 @@ body {
   box-shadow: 0 0 0 1.5px #5a3a08, inset 0 0 40px rgba(0,0,0,.45), var(--shadow);
   padding: .45rem .65rem;
   display: flex; flex-direction: column; gap: .3rem;
-  flex: 1; min-height: 90px;
+  flex: 1; min-height: 140px;
   position: relative; overflow: hidden;
 }
 /* Corner suit icons */
@@ -731,44 +743,53 @@ body {
 .fs-r { color: #ff6060; }
 .fs-b { color: #ccccff; }
 
-.felt-row { display: flex; gap: 1.5rem; align-items: flex-start; justify-content: center; flex-wrap: wrap; position: relative; z-index: 1; }
-.felt-col { display: flex; flex-direction: column; align-items: center; gap: .3rem; }
+.felt-row { display: flex; gap: 1.2rem; align-items: flex-start; justify-content: center; flex-wrap: nowrap; position: relative; z-index: 1; }
+.felt-col { display: flex; flex-direction: column; align-items: center; gap: .3rem; flex-shrink: 1; min-width: 0; }
 .felt-lbl { font-size: var(--fs-2xs); color: rgba(255,255,255,.3); text-transform: uppercase; letter-spacing: .1em; }
-.felt-div { width: 1px; height: 60px; background: rgba(255,255,255,.1); align-self: center; }
+.felt-div { width: 1px; height: 60px; background: rgba(255,255,255,.1); align-self: center; flex-shrink: 0; }
 .felt-empty { font-size: var(--fs-xs); color: rgba(255,255,255,.22); font-style: italic; }
 
-.floor-cards { display: flex; gap: .35rem; flex-wrap: wrap; justify-content: center; align-items: center; min-height: 62px; }
-.deck-zone   { position: relative; display: flex; align-items: center; }
+/* Floor cards scroll horizontally — never wrap (no height change) */
+.floor-cards {
+  display: flex; gap: .35rem; flex-wrap: nowrap;
+  overflow-x: auto; scrollbar-width: none;
+  align-items: center; min-height: 62px; max-height: 62px;
+}
+.floor-cards::-webkit-scrollbar { display: none; }
+/* Deck zone — fixed height so it never shifts */
+.deck-zone { position: relative; display: flex; align-items: center; min-height: 96px; flex-shrink: 0; }
 
-/* ── Deck card — card back component fills it, thief image inside ── */
+/* ── Deck card — no overflow:hidden so count badge renders outside card ── */
 .deck-card {
   position: relative;
   width: 62px; height: 94px;
-  border: 1.5px solid var(--gold);
+  border: 2px solid var(--gold);
   border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
   box-shadow:
-    0 0 0 1px rgba(212,175,55,.25),
-    0 0 14px rgba(212,175,55,.22),
-    0 4px 14px rgba(0,0,0,.6);
-  overflow: hidden;
+    0 0 0 1px rgba(212,175,55,.3),
+    0 0 18px rgba(212,175,55,.28),
+    0 4px 14px rgba(0,0,0,.65);
   cursor: default;
   transition: box-shadow .25s;
+  flex-shrink: 0;
 }
 .deck-card:hover {
   box-shadow:
-    0 0 0 1px rgba(212,175,55,.4),
-    0 0 22px rgba(212,175,55,.38),
-    0 4px 14px rgba(0,0,0,.6);
+    0 0 0 1px rgba(212,175,55,.5),
+    0 0 26px rgba(212,175,55,.45),
+    0 4px 14px rgba(0,0,0,.65);
 }
 .deck-count {
-  position: absolute; bottom: -7px; right: -8px;
+  position: absolute; bottom: -8px; right: -9px;
   background: var(--gold); color: #1a0e00;
-  font-size: .62rem; font-weight: var(--fw-black);
-  padding: 1px 6px; border-radius: 99px;
-  border: 1.5px solid var(--surface);
-  min-width: 20px; text-align: center;
+  font-size: .65rem; font-weight: var(--fw-black);
+  padding: 2px 7px; border-radius: 99px;
+  border: 2px solid #060d22;
+  min-width: 22px; text-align: center;
   font-family: 'Cinzel', serif;
+  z-index: 2;
+  box-shadow: 0 2px 6px rgba(0,0,0,.5);
 }
 
 /* ── My area ── */

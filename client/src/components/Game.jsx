@@ -469,22 +469,25 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
                     ))}
                   </div>
 
-                  {p.lastSlotTop && (
-                    <div
-                      className={`opp-topcard ${steal ? 'opp-topcard--steal' : ''}`}
-                      onClick={() => steal && act(
-                        { type:'STEAL', handCardId: sel.id, targetPlayerId: p.id },
-                        'Stolen!'
-                      )}
-                    >
-                      <TableCard
-                        card={p.lastSlotTop.topCard}
-                        glow={steal} pulsing={steal}
-                        locked={p.lastSlotTop.locked}
-                      />
-                      {steal && <span className="steal-cta">STEAL!</span>}
-                    </div>
-                  )}
+                  {/* Fixed-height slot — opp area height never changes when steal appears */}
+                  <div className="opp-topcard-slot">
+                    {p.lastSlotTop && (
+                      <div
+                        className={`opp-topcard ${steal ? 'opp-topcard--steal' : ''}`}
+                        onClick={() => steal && act(
+                          { type:'STEAL', handCardId: sel.id, targetPlayerId: p.id },
+                          'Stolen!'
+                        )}
+                      >
+                        {steal && <span className="steal-cta">STEAL!</span>}
+                        <TableCard
+                          card={p.lastSlotTop.topCard}
+                          glow={steal} pulsing={steal}
+                          locked={p.lastSlotTop.locked}
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
               );
             })}
