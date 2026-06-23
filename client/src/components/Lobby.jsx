@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import socket from '../socket.js';
+import { DaketiLogo } from './DaketiLogo.jsx';
 
 export default function Lobby({ onJoined, onlineUsers = [], mySocketId, user, onOpenProfile }) {
   const [name,  setName]  = useState(() => user?.displayName || localStorage.getItem('daketi_name') || '');
@@ -66,8 +67,8 @@ export default function Lobby({ onJoined, onlineUsers = [], mySocketId, user, on
       <div className="lobby-content">
 
         {/* ── Hero card ── */}
-        <div className="lobby-hero-wrap">
-          <img src="/card-back-hero.jpg" className="lobby-hero-card" alt="Daketi" />
+        <div className="logo-frame lobby-logo-frame">
+          <DaketiLogo className="brand-logo" />
         </div>
 
         {/* ── Brand ── */}

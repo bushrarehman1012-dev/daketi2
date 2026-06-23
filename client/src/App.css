@@ -749,7 +749,7 @@ body {
 /* opp-topcard: flex row so STEAL text sits to the LEFT of the card */
 .opp-topcard {
   display: flex; flex-direction: row;
-  align-items: center; gap: .3rem;
+  align-items: center; gap: .55rem; /* wider gap so STEAL label has breathing room */
   cursor: default;
 }
 .opp-topcard-inner {
@@ -766,12 +766,16 @@ body {
   50%      { filter: drop-shadow(0 0 12px rgba(220,50,50,.95)); }
 }
 /* STEAL label — flex sibling to the LEFT of the card, not a layout-shifting element */
+/* STEAL pill — solid background for full legibility at any angle */
 .steal-cta {
-  font-size: var(--fs-sm); font-weight: var(--fw-black); color: #ff3333;
-  letter-spacing: .04em; text-transform: uppercase; white-space: nowrap;
-  pointer-events: none; flex-shrink: 0;
-  text-shadow: 0 0 10px rgba(255,50,50,.7);
-  animation: pillpulse .65s infinite;
+  font-size: .62rem; font-weight: var(--fw-black);
+  color: #fff; letter-spacing: .08em; text-transform: uppercase;
+  white-space: nowrap; pointer-events: none; flex-shrink: 0;
+  background: rgba(180,20,20,.9);
+  border: 1px solid rgba(255,60,60,.55);
+  border-radius: 99px; padding: .18rem .55rem;
+  box-shadow: 0 0 10px rgba(220,30,30,.55);
+  animation: pillpulse .7s infinite;
 }
 /* Slot count badge below the top card */
 .opp-slot-count {
@@ -787,7 +791,8 @@ body {
   box-shadow: 0 0 0 1.5px #5a3a08, inset 0 0 40px rgba(0,0,0,.45), var(--shadow);
   padding: .45rem .65rem;
   display: flex; flex-direction: column; gap: .3rem;
-  flex: 1; min-height: 140px;
+  flex: none;         /* never grow/shrink — floor table is always the same size */
+  height: 140px;      /* fixed — was min-height: 140px which allowed layout shift */
   position: relative; overflow: visible;
 }
 /* Ornate corner suit icons — styled after the design elements filigree corners */
@@ -1126,38 +1131,33 @@ body {
 /* ── Centered column ── */
 .auth-shell {
   position: relative; z-index: 1;
-  width: min(100%, 400px);
+  width: min(100%, 420px);
   display: flex; flex-direction: column; align-items: center;
 }
 
 /* ── Brand block: logo + wordmark + tagline ── */
-.brand { text-align: center; margin-bottom: 16px; }
+.brand { text-align: center; margin-bottom: 20px; }
 
-/* ── Premium logo frame — card shape with gold border ── */
+/* ── Logo frame — hosts the SVG card logo; shadow only, SVG draws its own border ── */
 .logo-frame {
-  width: clamp(86px, 18vw, 118px);
+  width: clamp(100px, 20vw, 130px);
   aspect-ratio: 3 / 4;
-  margin: 0 auto 12px;
-  padding: 6px;
-  border-radius: 18px;
-  background: linear-gradient(180deg, rgba(15,31,70,.96), rgba(3,10,26,.98));
-  border: 1px solid rgba(217,180,49,.42);
+  margin: 0 auto 14px;
+  padding: 0; background: none; border: none;
+  overflow: visible;
   box-shadow:
-    0 14px 34px rgba(0,0,0,.52),
-    0 0 26px rgba(217,180,49,.12),
-    inset 0 1px 0 rgba(255,255,255,.06);
-  overflow: hidden;
+    0 18px 42px rgba(0,0,0,.65),
+    0 0 32px rgba(217,180,49,.18);
+  display: flex;
 }
-.brand-logo {
-  width: 100%; height: 100%;
-  display: block; object-fit: cover;
-  border-radius: 13px;
-}
+/* Lobby logo slightly smaller than auth page logo */
+.lobby-logo-frame { width: clamp(90px, 18vw, 116px); }
+.brand-logo { width: 100%; height: auto; display: block; }
 
 /* ── Glass auth card ── */
 .auth-card {
   width: 100%;
-  padding: 16px 16px 14px;
+  padding: 20px 20px 18px;
   border-radius: 20px;
   border: 1px solid rgba(217,180,49,.28);
   background: rgba(6,18,43,.84);
@@ -1456,16 +1456,14 @@ body {
   .lf-btn          { padding: .55rem 1rem; }
 }
 
-/* Auth page — short screens (laptops ~720px, landscape phones) */
-@media (max-height: 720px) {
+/* Auth page — short screens (landscape phones or very short laptops) */
+@media (max-height: 680px) {
   .auth-page { align-items: start; padding-top: 10px; padding-bottom: 10px; }
-  .brand { margin-bottom: 10px; }
-  .logo-frame { width: 76px; margin-bottom: 8px; padding: 5px; border-radius: 14px; }
-  .brand-logo { border-radius: 10px; }
-  .auth-card { padding: 13px 14px 11px; gap: .5rem; border-radius: 16px; }
+  .brand { margin-bottom: 12px; }
+  .logo-frame { width: 84px; margin-bottom: 10px; }
+  .auth-card { padding: 15px 16px 13px; gap: .5rem; border-radius: 16px; }
   .auth-form { gap: .4rem; }
-  /* Smaller wordmark on short screens */
-  .auth-page .lobby-wordmark { font-size: 1.9rem; }
+  .auth-page .lobby-wordmark { font-size: 1.95rem; }
   .auth-page .lobby-tagline  { font-size: .55rem; margin-top: .2rem; }
 }
 
