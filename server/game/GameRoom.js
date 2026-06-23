@@ -334,23 +334,22 @@ class GameRoom {
           };
         }
 
-        // Opponent: reveal last slot's top card + each locked slot's size/topCard.
+        // Opponent: reveal last slot's top card (stealable) + total locked points.
         const lastSlot = p.slots.length > 0 ? p.slots[p.slots.length - 1] : null;
         const lastSlotTop = lastSlot
           ? { topCard: lastSlot.cards.at(-1), size: lastSlot.cards.length, locked: lastSlot.locked }
           : null;
 
-        // All locked slots (excluding the last slot, which is already in lastSlotTop)
-        const lockedSlots = p.slots
-          .slice(0, p.slots.length > 0 ? p.slots.length - 1 : 0)
+        // Points sitting in locked slots only (stealable slot excluded — client doesn't need per-slot cards).
+        const lockedScore = p.slots
           .filter(s => s.locked)
-          .map(s => ({ size: s.cards.length, topCard: s.cards.at(-1) }));
+          .reduce((sum, s) => sum + s.cards.reduce((pts, c) => pts + cardValue(c), 0), 0);
 
         return {
           id: p.id, name: p.name,
           handCount: p.hand.length, hand: null,
           lockedSetCount, currentScore, score: p.score,
-          lastSlotTop, lockedSlots,
+          lastSlotTop, lockedScore,
         };
       }),
     };

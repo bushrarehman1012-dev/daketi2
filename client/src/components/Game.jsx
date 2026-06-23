@@ -445,19 +445,12 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
                     </div>
                   </div>
 
-                  {/* Locked stacks row — shows each locked set with count + lock */}
-                  {p.lockedSlots?.length > 0 && (
-                    <div className="opp-locked-sets">
-                      {p.lockedSlots.map((ls, i) => (
-                        <div key={i} className="opp-locked-stack">
-                          <div className="opp-locked-cards">
-                            {Array.from({ length: Math.min(ls.size, 3) }).map((_, j) => (
-                              <div key={j} className="opp-locked-card-pip" style={{ marginLeft: j * 6 }} />
-                            ))}
-                          </div>
-                          <span className="opp-locked-badge">🔒×{ls.size}</span>
-                        </div>
-                      ))}
+                  {/* Single locked-points info box — fixed size, never grows with lock count */}
+                  {p.lockedScore > 0 && (
+                    <div className="opp-lock-box">
+                      <span className="opp-lock-icon">🔒</span>
+                      <span className="opp-lock-pts">{p.lockedScore}</span>
+                      <span className="opp-lock-label">pts</span>
                     </div>
                   )}
 

@@ -419,8 +419,8 @@ body {
 ═══════════════════════════════════════ */
 .hc {
   position: relative;
-  width: 62px; height: 94px;
-  border-radius: 9px;
+  width: 56px; height: 84px;
+  border-radius: 8px;
   background: linear-gradient(165deg, #FFFFF8 0%, #FFF8DC 55%, #FFF2C0 100%);
   border: 1px solid #C8A060;
   box-shadow: 0 3px 10px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.9);
@@ -478,8 +478,8 @@ body {
   position: relative;
   width: 42px; height: 60px; border-radius: 6px;
   background: linear-gradient(165deg, #FFFFF8, #FFF4D0);
-  border: 1px solid #C0A050;
-  box-shadow: 0 2px 7px rgba(0,0,0,.4);
+  border: 1.5px solid #b89040;
+  box-shadow: 0 2px 10px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.75);
   display: block; flex-shrink: 0;
   transition: transform .15s, box-shadow .15s;
   overflow: hidden;
@@ -599,7 +599,7 @@ body {
 .g-body { flex: 1; display: flex; min-height: 0; overflow: hidden; }
 .g-table {
   flex: 1; display: flex; flex-direction: column;
-  padding: .45rem .7rem; gap: .4rem;
+  padding: .65rem 1rem; gap: .55rem;
   min-width: 0; overflow: hidden;
 }
 
@@ -653,16 +653,21 @@ body {
 }
 .g-hint--idle { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.08); color: var(--text-dim); }
 
-/* ── Opponents row ── */
-.g-opps { display: flex; gap: .45rem; flex-wrap: wrap; flex-shrink: 0; }
+/* ── Opponents row — never wraps, scrolls if >4 players ── */
+.g-opps {
+  display: flex; gap: .55rem;
+  flex-wrap: nowrap; flex-shrink: 0;
+  overflow-x: auto; scrollbar-width: none;
+}
+.g-opps::-webkit-scrollbar { display: none; }
 
 .opp {
   background: linear-gradient(160deg, rgba(14,26,60,.85), rgba(8,14,36,.9));
   border: 1px solid rgba(212,175,55,.15);
-  border-top: 1px solid rgba(212,175,55,.28); /* gold top accent */
-  border-radius: 12px; padding: .45rem .6rem; flex: 1; min-width: 120px;
+  border-top: 2px solid rgba(212,175,55,.35);
+  border-radius: 12px; padding: .5rem .7rem; flex: 1; min-width: 105px;
   display: flex; flex-direction: column; gap: .3rem;
-  box-shadow: inset 0 1px 0 rgba(212,175,55,.05);
+  box-shadow: inset 0 1px 0 rgba(212,175,55,.06);
 }
 .opp--active {
   border-color: rgba(212,175,55,.45);
@@ -701,30 +706,20 @@ body {
 .opp-facedown  { position: absolute; }
 .opp-back { transform: scale(.78); transform-origin: left top; }
 
-/* Opponent locked stacks — shows per-slot locked sets with card stack visual */
-.opp-locked-sets {
-  display: flex; gap: .4rem; flex-wrap: wrap; align-items: center; flex-shrink: 0;
+/* Single fixed-size locked-points info box — replaces per-slot lock cards */
+.opp-lock-box {
+  display: flex; align-items: center; gap: .3rem; flex-shrink: 0;
+  background: rgba(212,175,55,.07);
+  border: 1px solid rgba(212,175,55,.22);
+  border-radius: 8px; padding: .22rem .55rem;
 }
-.opp-locked-stack {
-  display: flex; align-items: center; gap: .25rem;
+.opp-lock-icon { font-size: .78rem; line-height: 1; }
+.opp-lock-pts {
+  font-family: 'Cinzel', serif; font-size: var(--fs-sm);
+  font-weight: var(--fw-black); color: var(--gold); line-height: 1;
 }
-.opp-locked-cards {
-  position: relative; width: 26px; height: 34px; flex-shrink: 0;
-}
-.opp-locked-card-pip {
-  position: absolute; top: 0;
-  width: 20px; height: 30px;
-  background: linear-gradient(165deg, #fff8e8, #ffe8a0);
-  border: 1px solid rgba(212,175,55,.6);
-  border-radius: 3px;
-  box-shadow: 0 1px 3px rgba(0,0,0,.35);
-}
-.opp-locked-badge {
-  font-size: var(--fs-2xs); color: var(--gold);
-  font-weight: var(--fw-bold); white-space: nowrap;
-  background: rgba(212,175,55,.1);
-  border: 1px solid rgba(212,175,55,.25);
-  border-radius: 99px; padding: 1px 5px;
+.opp-lock-label {
+  font-size: var(--fs-2xs); color: var(--text-dim); white-space: nowrap; line-height: 1;
 }
 
 /* Stealable top card — fixed-height slot so opp area never shifts */
@@ -962,27 +957,30 @@ body {
   font-size: var(--fs-2xs); color: var(--gold); font-weight: var(--fw-bold);
   font-family: 'Cinzel', serif; margin-left: .3rem;
 }
-/* Hand + Drop button in one horizontal row */
+/* Hand + Drop button — centered group on screen */
 .hand-drop-row {
-  display: flex; align-items: center; gap: .5rem;
+  display: flex; align-items: center;
+  justify-content: center;
+  gap: 1rem;
   overflow: visible;
+  padding: 0 .75rem;
 }
 .hand-scroll {
-  flex: 1; min-width: 0;
+  flex: 0 1 auto;          /* shrinks to content, does NOT fill all space */
+  min-width: 0;
+  max-width: calc(100% - 80px);
   overflow-x: auto;
-  /* overflow-x:auto coerces overflow-y to auto — padding-top creates headroom
-     for scale(1.14) expansion (~7px above card top) without actual overflow */
   padding-top: 12px;
   margin-top: -12px;
   scrollbar-width: none;
 }
 .hand-scroll::-webkit-scrollbar { display: none; }
 .hand-row {
-  display: flex; gap: .35rem;
+  display: flex; gap: .4rem;
   flex-wrap: nowrap; overflow: visible;
   padding-bottom: 12px;
   align-items: center;
-  min-width: 100%;        /* fills container width → justify-content:center works */
+  min-width: 100%;
   justify-content: center;
 }
 
@@ -1432,13 +1430,14 @@ body {
    RESPONSIVE
 ═══════════════════════════════════════ */
 @media (max-width: 480px) {
-  /* ── Hand cards: fit more in a row ── */
-  .hc { width: 48px; height: 74px; }
+  /* ── Hand cards: slightly smaller on mobile ── */
+  .hc { width: 44px; height: 67px; }
   .hc-rank { font-size: 11px; }
   .hc-suit { font-size: 8px; }
-  /* Pip font-size reduced so symbols never overlap */
-  .hc-pips { top: 18px; bottom: 18px; font-size: 9px; }
-  .hc-face-svg { height: calc(100% - 28px); }
+  .hc-pips { top: 16px; bottom: 16px; font-size: 8px; }
+  .hc-face-svg { height: calc(100% - 26px); }
+  /* Table margins tighter on mobile */
+  .g-table { padding: .45rem .6rem; gap: .4rem; }
   /* Table card pips — small and tight */
   .tc-pips { font-size: 6px; }
   .tc-rank { font-size: 8px; }
