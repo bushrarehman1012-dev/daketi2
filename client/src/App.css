@@ -432,10 +432,16 @@ body {
 .hc-r  { color: var(--red); }
 .hc-b  { color: #111; }
 .hc-pick { cursor: pointer; }
-.hc-pick:hover { transform: translateY(-10px) scale(1.04); box-shadow: 0 12px 24px rgba(0,0,0,.5); }
+/* Hover: scale in place — no translateY so nothing clips */
+.hc-pick:hover { transform: scale(1.06); box-shadow: 0 8px 20px rgba(0,0,0,.48); }
+/* Selected: scale in place + gold halo — stationary, smooth, no layer conflicts */
 .hc-sel {
-  transform: translateY(-16px) scale(1.07) !important;
-  box-shadow: 0 16px 32px rgba(0,0,0,.6), 0 0 0 2.5px var(--gold), 0 0 24px rgba(212,175,55,.55) !important;
+  transform: scale(1.14) !important;
+  box-shadow:
+    0 8px 28px rgba(0,0,0,.55),
+    0 0 0 2.5px var(--gold),
+    0 0 22px rgba(212,175,55,.65) !important;
+  z-index: 10; /* render above drop button and siblings */
 }
 .hc-new { animation: deal .45s cubic-bezier(.2,.8,.2,1); }
 @keyframes deal {
@@ -959,18 +965,25 @@ body {
 /* Hand + Drop button in one horizontal row */
 .hand-drop-row {
   display: flex; align-items: center; gap: .5rem;
+  overflow: visible;
 }
 .hand-scroll {
   flex: 1; min-width: 0;
-  overflow-x: auto; overflow-y: visible;
+  overflow-x: auto;
+  /* overflow-x:auto coerces overflow-y to auto — padding-top creates headroom
+     for scale(1.14) expansion (~7px above card top) without actual overflow */
+  padding-top: 12px;
+  margin-top: -12px;
   scrollbar-width: none;
 }
 .hand-scroll::-webkit-scrollbar { display: none; }
 .hand-row {
   display: flex; gap: .35rem;
   flex-wrap: nowrap; overflow: visible;
-  padding-bottom: 18px; /* room for lifted-card shadow */
+  padding-bottom: 12px;
   align-items: center;
+  min-width: 100%;        /* fills container width → justify-content:center works */
+  justify-content: center;
 }
 
 /* Drop — styled like the action button design element (ATTACK style) */
