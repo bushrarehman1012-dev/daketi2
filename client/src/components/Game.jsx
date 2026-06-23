@@ -380,9 +380,6 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
         {phaseTag && <span className="g-bar-phase">{phaseTag}</span>}
 
         <div className="g-bar-right">
-          <div className={`turn-pill ${isMyTurn ? 'turn-pill--mine' : ''}`}>
-            {isMyTurn ? '⭐ Your Turn' : `${currentName}'s turn`}
-          </div>
           <button className="icon-btn leave-btn" onClick={onLeave} title="Leave game">✕</button>
 
           {/* Chat — always visible, always same position */}
@@ -427,11 +424,6 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
       {/* ── Body ────────────────────────────────────────────────────────── */}
       <div className="g-body">
         <div className="g-table">
-
-          {/* Turn status — always same height, static text */}
-          <div className={`g-hint ${!isMyTurn ? 'g-hint--idle' : ''}`}>
-            {isMyTurn ? <>Your turn — tap a hand card to select</> : <>{currentName}&apos;s turn…</>}
-          </div>
 
           {/* ── Opponents ──────────────────────────────────────────────── */}
           <div className="g-opps">
@@ -545,7 +537,7 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
           </div>
 
           {/* ── My area ────────────────────────────────────────────────── */}
-          <div className="g-me">
+          <div className={`g-me ${isMyTurn ? 'g-me--active' : ''}`}>
             {me?.slots?.length > 0 && (
               <div className="my-stacks-row">
                 <div className="my-stacks">
@@ -582,29 +574,27 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
               <span className="hand-count">{me?.hand?.length ?? 0} cards</span>
               <span className="hand-score">{me?.currentScore ?? 0} pts</span>
             </div>
-            <div className="hand-row">
-              {me?.hand?.map(c => (
-                <HandCard key={c.id} card={c}
-                  selected={sel?.id === c.id}
-                  canPlay={isMyTurn}
-                  isNew={c.id === newId}
-                  onClick={() => pick(c)}
-                />
-              ))}
-            </div>
-
-            {isMyTurn && (
-              <div className="drop-zone">
+            <div className="hand-drop-row">
+              <div className="hand-scroll">
+                <div className="hand-row">
+                  {me?.hand?.map(c => (
+                    <HandCard key={c.id} card={c}
+                      selected={sel?.id === c.id}
+                      canPlay={isMyTurn}
+                      isNew={c.id === newId}
+                      onClick={() => pick(c)}
+                    />
+                  ))}
+                </div>
+              </div>
+              {isMyTurn && (
                 <button
                   className={`btn-drop ${sel ? 'btn-drop--ready' : ''}`}
                   disabled={!sel}
                   onClick={() => sel && act({ type:'DROP', handCardId: sel.id }, '')}
-                >
-                  Drop &amp; End Turn
-                </button>
-                {!sel && <span className="drop-tip">Select a card first</span>}
-              </div>
-            )}
+                >Drop</button>
+              )}
+            </div>
           </div>
 
         </div>

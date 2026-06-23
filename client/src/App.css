@@ -780,6 +780,7 @@ body {
 .felt-corner {
   position: absolute; font-size: 1.3rem; line-height: 1;
   pointer-events: none; user-select: none;
+  z-index: 0; /* behind felt-row content (z-index:1) and cards (z-index:3) */
 }
 .felt-corner--tl { top: 6px;  left: 8px; }
 .felt-corner--tr { top: 6px;  right: 8px; }
@@ -867,7 +868,19 @@ body {
 }
 
 /* ── My area ── */
-.g-me { display: flex; flex-direction: column; gap: .4rem; flex-shrink: 0; }
+.g-me {
+  display: flex; flex-direction: column; gap: .4rem; flex-shrink: 0;
+  border-radius: 10px; transition: box-shadow .3s;
+}
+/* Gold halo when it's the player's turn — replaces the removed text indicators */
+.g-me--active {
+  box-shadow: 0 0 0 1.5px rgba(212,175,55,.52), 0 0 28px rgba(212,175,55,.24);
+  animation: myturnpulse 1.5s ease-in-out infinite;
+}
+@keyframes myturnpulse {
+  0%,100% { box-shadow: 0 0 0 1px rgba(212,175,55,.38), 0 0 18px rgba(212,175,55,.16); }
+  50%      { box-shadow: 0 0 0 2px rgba(212,175,55,.68), 0 0 38px rgba(212,175,55,.38); }
+}
 
 /* Own stacks */
 .my-stacks-row { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
@@ -943,10 +956,21 @@ body {
   font-size: var(--fs-2xs); color: var(--gold); font-weight: var(--fw-bold);
   font-family: 'Cinzel', serif; margin-left: .3rem;
 }
-.hand-row   {
-  display: flex; gap: .35rem; justify-content: center;
+/* Hand + Drop button in one horizontal row */
+.hand-drop-row {
+  display: flex; align-items: center; gap: .5rem;
+}
+.hand-scroll {
+  flex: 1; min-width: 0;
+  overflow-x: auto; overflow-y: visible;
+  scrollbar-width: none;
+}
+.hand-scroll::-webkit-scrollbar { display: none; }
+.hand-row {
+  display: flex; gap: .35rem;
   flex-wrap: nowrap; overflow: visible;
   padding-bottom: 18px; /* room for lifted-card shadow */
+  align-items: center;
 }
 
 /* Drop — styled like the action button design element (ATTACK style) */
@@ -1407,11 +1431,11 @@ body {
   .tc-rank { font-size: 8px; }
   .tc-suit-sm { font-size: 6px; }
 
-  /* ── Header: hide decorative text to free space for the 6 fixed buttons ── */
-  .g-bar-brand { display: none; }
+  /* ── Header: show brand, hide room/phase to give name space ── */
+  .g-bar-brand { font-size: var(--fs-sm); letter-spacing: .06em; } /* visible, smaller */
   .g-bar-room  { display: none; }
   .g-bar-phase { display: none; }
-  .turn-pill { max-width: 64px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .52rem; padding: .18rem .45rem; }
+  /* turn-pill removed from JSX; g-hint removed from JSX — no CSS needed */
   .icon-btn  { padding: .26rem .48rem; font-size: .9rem; }
 
   /* ── Chat: full-screen overlay on mobile ── */
