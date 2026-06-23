@@ -439,11 +439,6 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
                         <span className="opp-score-inline">{p.currentScore}</span>
                         {p.name}{isCur && <span className="live-dot"/>}
                       </div>
-                      <div className="opp-meta">
-                        {p.lockedScore > 0
-                          ? <span className="opp-lock-inline">🔒 {p.lockedScore} pts locked</span>
-                          : <span>collecting…</span>}
-                      </div>
                     </div>
                   </div>
 
@@ -453,6 +448,13 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
                         <div className="tc tc-back opp-back"><CardBack /></div>
                       </div>
                     ))}
+                  </div>
+
+                  {/* Lock bar — always rendered (fixed height), sits AFTER the card pile so it's never hidden behind it */}
+                  <div className="opp-lock-bar">
+                    {p.lockedScore > 0
+                      ? <><span className="opp-lock-bar-icon">🔒</span><span className="opp-lock-bar-pts">{p.lockedScore} pts locked</span></>
+                      : <span className="opp-lock-bar-empty">collecting…</span>}
                   </div>
 
                   {/* Fixed-height slot — STEAL text sits to the LEFT of the card */}
@@ -524,38 +526,39 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
 
           {/* ── My area ────────────────────────────────────────────────── */}
           <div className={`g-me ${isMyTurn ? 'g-me--active' : ''}`}>
-            {me?.slots?.length > 0 && (
-              <div className="my-stacks-row">
-                <div className="my-stacks-scroll">
+            <div className="my-stacks-row">
+              <div className="my-stacks-scroll">
                 <div className="my-stacks">
-                  {me.slots.map((slot, i) => {
-                    const isLast     = i === me.slots.length - 1;
-                    const pairActive = isLast && !slot.locked && !!canPairOwn;
-                    if (slot.locked) {
-                      return (
-                        <div key={i} className="my-stack my-stack--locked" title="Locked">
-                          <TableCard card={slot.topCard} locked />
-                          <span className="st-sz">🔒×{slot.size}</span>
-                        </div>
-                      );
-                    }
-                    return (
-                      <div
-                        key={i}
-                        className={['my-stack', pairActive ? 'my-stack--pair' : '', isLast && !pairActive ? 'my-stack--latest' : ''].filter(Boolean).join(' ')}
-                        onClick={() => pairActive && act({ type:'PAIR_OWN', handCardId: sel.id }, 'Added to stack!')}
-                        title={isLast ? 'Most recent — can be stolen' : ''}
-                      >
-                        <TableCard card={slot.topCard} glow={pairActive} />
-                        <span className="st-sz">×{slot.size}</span>
-                        {pairActive && <span className="st-action-tag">+PAIR</span>}
-                      </div>
-                    );
-                  })}
-                </div>
+                  {me?.slots?.length > 0
+                    ? me.slots.map((slot, i) => {
+                        const isLast     = i === me.slots.length - 1;
+                        const pairActive = isLast && !slot.locked && !!canPairOwn;
+                        if (slot.locked) {
+                          return (
+                            <div key={i} className="my-stack my-stack--locked" title="Locked">
+                              <TableCard card={slot.topCard} locked />
+                              <span className="st-sz">🔒×{slot.size}</span>
+                            </div>
+                          );
+                        }
+                        return (
+                          <div
+                            key={i}
+                            className={['my-stack', pairActive ? 'my-stack--pair' : '', isLast && !pairActive ? 'my-stack--latest' : ''].filter(Boolean).join(' ')}
+                            onClick={() => pairActive && act({ type:'PAIR_OWN', handCardId: sel.id }, 'Added to stack!')}
+                            title={isLast ? 'Most recent — can be stolen' : ''}
+                          >
+                            <TableCard card={slot.topCard} glow={pairActive} />
+                            <span className="st-sz">×{slot.size}</span>
+                            {pairActive && <span className="st-action-tag">+PAIR</span>}
+                          </div>
+                        );
+                      })
+                    : <div className="my-stacks-ph">— no pairs yet —</div>
+                  }
                 </div>
               </div>
-            )}
+            </div>
 
             <div className="hand-label-row">
               <span className="hand-lbl">Your Hand</span>
@@ -575,13 +578,12 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
                   ))}
                 </div>
               </div>
-              {isMyTurn && (
-                <button
-                  className={`btn-drop ${sel ? 'btn-drop--ready' : ''}`}
-                  disabled={!sel}
-                  onClick={() => sel && act({ type:'DROP', handCardId: sel.id }, '')}
-                >Drop</button>
-              )}
+              <button
+                className={`btn-drop ${sel ? 'btn-drop--ready' : ''}`}
+                disabled={!sel || !isMyTurn}
+                onClick={() => sel && isMyTurn && act({ type:'DROP', handCardId: sel.id }, '')}
+                style={{ visibility: isMyTurn ? 'visible' : 'hidden' }}
+              >Drop</button>
             </div>
           </div>
 
