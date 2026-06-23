@@ -271,15 +271,17 @@ function GameOver({ players, myId, highscores }) {
 
 // ── Main Game ─────────────────────────────────────────────────────────────────
 export default function Game({ state, myId, chatMessages, highscores, onLeave }) {
-  const [sel,       setSel]      = useState(null);
-  const [feedback,  setFeedback] = useState('');
-  const [err,       setErr]      = useState('');
-  const [newId,     setNewId]    = useState(null);
-  const [chatOpen,  setChatOpen] = useState(false);
-  const [hintToast, setHintToast] = useState('');
+  const [sel,        setSel]       = useState(null);
+  const [feedback,   setFeedback]  = useState('');
+  const [err,        setErr]       = useState('');
+  const [newId,      setNewId]     = useState(null);
+  const [chatOpen,   setChatOpen]  = useState(false);
+  const [unreadChat, setUnreadChat] = useState(0);
+  const [hintToast,  setHintToast] = useState('');
 
-  const prevHandRef  = useRef([]);
-  const hintTimerRef = useRef(null);
+  const prevHandRef    = useRef([]);
+  const hintTimerRef   = useRef(null);
+  const prevMsgCount   = useRef(0);
   const prevStateRef    = useRef(null);
   const gameOverSfxDone = useRef(false);
 
@@ -290,6 +292,13 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
   const isMyTurn = state.currentPlayerId === myId;
   const others   = state.players.filter(p => p.id !== myId);
   const lastSlot = me?.slots?.at(-1) ?? null;
+
+  // Unread chat badge — count new messages that arrive while chat is closed
+  useEffect(() => {
+    const delta = chatMessages.length - prevMsgCount.current;
+    prevMsgCount.current = chatMessages.length;
+    if (delta > 0 && !chatOpen) setUnreadChat(v => v + delta);
+  }, [chatMessages, chatOpen]);
 
   useEffect(() => {
     if (!me?.hand) return;
@@ -319,6 +328,16 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
     }
     if (myCards < prevMyCards && state.currentPlayerId !== myId) {
       ach.onStolenFrom(); sfx.stolenFrom();
+    }
+
+    // Opponent action sounds — only when it's not my turn and my cards unchanged
+    if (state.currentPlayerId !== myId && myCards === prevMyCards) {
+      const curOpp  = state.players.find(p => p.id === state.currentPlayerId);
+      const prevOpp = prev.players.find(p => p.id === state.currentPlayerId);
+      if (curOpp && prevOpp) {
+        if ((curOpp.currentScore ?? 0) > (prevOpp.currentScore ?? 0)) sfx.pair();
+        else if (state.floor.length > prev.floor.length)              sfx.drop();
+      }
     }
 
     const meLocked   = (me.slots     || []).filter(s => s.locked).length;
@@ -382,12 +401,16 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
         <div className="g-bar-right">
           <button className="icon-btn leave-btn" onClick={onLeave} title="Leave game">✕</button>
 
-          {/* Chat — always visible, always same position */}
+          {/* Chat — badge shows unread count when closed */}
           <button
             className={`icon-btn ${chatOpen ? 'icon-btn--active' : ''}`}
-            onClick={() => setChatOpen(v => !v)}
+            onClick={() => { setChatOpen(v => !v); setUnreadChat(0); }}
             title="Chat"
-          >💬</button>
+            style={{ position: 'relative' }}
+          >
+            💬
+            {unreadChat > 0 && <span className="chat-badge">{unreadChat > 9 ? '9+' : unreadChat}</span>}
+          </button>
 
           {/* Voice — always exactly 3 buttons so header width never changes */}
           <button
@@ -436,7 +459,6 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
                     <div className="opp-av">{p.name[0]}</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div className="opp-nm">
-                        <span className="opp-score-inline">{p.currentScore}</span>
                         {p.name}{isCur && <span className="live-dot"/>}
                       </div>
                     </div>
@@ -450,11 +472,14 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
                     ))}
                   </div>
 
-                  {/* Lock bar — always rendered (fixed height), sits AFTER the card pile so it's never hidden behind it */}
+                  {/* Score + lock bar — always rendered after hand pile, never hidden behind cards */}
                   <div className="opp-lock-bar">
-                    {p.lockedScore > 0
-                      ? <><span className="opp-lock-bar-icon">🔒</span><span className="opp-lock-bar-pts">{p.lockedScore} pts locked</span></>
-                      : <span className="opp-lock-bar-empty">collecting…</span>}
+                    <span className="opp-score-bar">{p.currentScore} pts</span>
+                    {p.lockedScore > 0 && (
+                      <><span className="opp-lock-bar-sep">·</span>
+                      <span className="opp-lock-bar-icon">🔒</span>
+                      <span className="opp-lock-bar-pts">{p.lockedScore} locked</span></>
+                    )}
                   </div>
 
                   {/* Fixed-height slot — STEAL text sits to the LEFT of the card */}

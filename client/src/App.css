@@ -104,6 +104,14 @@ body {
 }
 .icon-btn:hover     { background: rgba(255,255,255,.12); border-color: var(--border-gold); }
 .icon-btn--active   { background: rgba(26,63,170,.4); border-color: rgba(38,85,204,.6); }
+/* Unread message badge on chat button */
+.chat-badge {
+  position: absolute; top: -5px; right: -5px;
+  background: #c62828; color: #fff; border: 1.5px solid var(--royal-d);
+  font-size: 9px; font-weight: 700; line-height: 1;
+  padding: 2px 4px; border-radius: 99px; min-width: 14px;
+  text-align: center; pointer-events: none;
+}
 
 /* Mic / voice button states */
 .mic-btn--on {
@@ -685,15 +693,6 @@ body {
 .opp-nm {
   font-size: var(--fs-sm); font-weight: var(--fw-semi); display: flex; align-items: center; gap: .3rem; flex-wrap: wrap;
 }
-/* Score inline badge — styled like the crown coin design element */
-.opp-score-inline {
-  font-family: 'Cinzel', serif; font-size: var(--fs-xs); font-weight: var(--fw-black);
-  color: #1a0e00;
-  background: linear-gradient(135deg, #D4AF37, #a87c10);
-  border: 1px solid rgba(212,175,55,.6);
-  border-radius: 99px; padding: 0 .45rem; line-height: 1.6; flex-shrink: 0;
-  box-shadow: 0 1px 4px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.25);
-}
 .live-dot {
   display: inline-block; width: 6px; height: 6px; border-radius: 50%;
   background: var(--gold); box-shadow: 0 0 6px var(--gold);
@@ -711,9 +710,10 @@ body {
   min-height: 16px; flex-shrink: 0;
   font-size: var(--fs-2xs);
 }
+.opp-score-bar     { color: var(--gold); font-family: 'Cinzel', serif; font-weight: var(--fw-bold); font-size: var(--fs-xs); }
+.opp-lock-bar-sep  { color: var(--text-dim); margin: 0 2px; }
 .opp-lock-bar-icon { font-size: 9px; }
-.opp-lock-bar-pts  { color: var(--gold); font-weight: var(--fw-bold); font-family: 'Cinzel', serif; letter-spacing: .03em; }
-.opp-lock-bar-empty { color: var(--text-dim); font-style: italic; }
+.opp-lock-bar-pts  { color: rgba(212,175,55,.7); font-weight: var(--fw-semi); letter-spacing: .02em; }
 
 /* Stealable top card — fixed-height slot so opp area never shifts */
 .opp-topcard-slot {

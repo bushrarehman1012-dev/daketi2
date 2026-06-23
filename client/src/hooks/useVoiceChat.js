@@ -40,11 +40,14 @@ export function useVoiceChat(myId) {
       if (!el) {
         el = document.createElement('audio');
         el.autoplay = true;
-        el.muted = speakerMutedRef.current; // respect current speaker state for new connections
+        el.playsInline = true; // required on iOS Safari
+        el.muted = speakerMutedRef.current;
         document.body.appendChild(el);
         audios.current[peerId] = el;
       }
       el.srcObject = e.streams[0];
+      // Explicitly call play() — autoplay alone is blocked on many browsers
+      el.play().catch(() => {});
     };
     pc.onconnectionstatechange = () => {
       if (['failed', 'closed', 'disconnected'].includes(pc.connectionState)) dropPeer(peerId);

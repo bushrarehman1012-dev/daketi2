@@ -2,28 +2,12 @@ import { useState, useEffect, useRef } from 'react';
 import socket from '../socket.js';
 
 export default function Chat({ messages, myId, open, onToggle }) {
-  const [text, setText]   = useState('');
-  const [tts,  setTts]    = useState(false);
-  const bottomRef         = useRef(null);
-  const prevLenRef        = useRef(0);
+  const [text, setText] = useState('');
+  const bottomRef       = useRef(null);
 
-  // Auto-scroll
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
-
-  // TTS: speak new messages from others
-  useEffect(() => {
-    if (!tts || messages.length === 0) return;
-    const newMsgs = messages.slice(prevLenRef.current);
-    prevLenRef.current = messages.length;
-    for (const m of newMsgs) {
-      if (m.playerId === myId) continue;
-      const u = new SpeechSynthesisUtterance(`${m.name} says: ${m.text}`);
-      u.rate = 1.1;
-      window.speechSynthesis.speak(u);
-    }
-  }, [messages, tts, myId]);
 
   function send() {
     const t = text.trim();
@@ -36,16 +20,7 @@ export default function Chat({ messages, myId, open, onToggle }) {
     <div className={`chat-panel ${open ? 'chat-panel--open' : ''}`}>
       <div className="chat-header" onClick={onToggle}>
         <span>💬 Chat</span>
-        <div className="chat-header-btns">
-          <button
-            className={`tts-btn ${tts ? 'tts-btn--on' : ''}`}
-            onClick={e => { e.stopPropagation(); setTts(v => !v); }}
-            title={tts ? 'Mute audio' : 'Enable audio read-aloud'}
-          >
-            {tts ? '🔊' : '🔇'}
-          </button>
-          <span className="chat-chevron">{open ? '▼' : '▲'}</span>
-        </div>
+        <span className="chat-chevron">{open ? '▼' : '▲'}</span>
       </div>
 
       {open && (
