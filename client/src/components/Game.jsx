@@ -9,19 +9,10 @@ const SUIT = { hearts: '♥', diamonds: '♦', clubs: '♣', spades: '♠' };
 const RED  = new Set(['hearts', 'diamonds']);
 
 // ── Card Back — CSS design that scales cleanly at any card size ───────────────
-function CardBack({ withThief = false }) {
+function CardBack() {
   return (
     <div className="cbk">
-      <div className="cbk-inner">
-        <span className="cbk-c cbk-tl">♠</span>
-        <span className="cbk-c cbk-tr">♥</span>
-        {withThief
-          ? <img src="/card-back-hero.jpg" className="cbk-thief" alt="" />
-          : <span className="cbk-spade">♠</span>
-        }
-        <span className="cbk-c cbk-bl">♦</span>
-        <span className="cbk-c cbk-br">♣</span>
-      </div>
+      <img src="/card-back-hero.jpg" className="cbk-bg" alt="" />
     </div>
   );
 }

@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
-import { DaketiLogo } from './DaketiLogo.jsx';
 
 export default function AuthPage({ onContinueAsGuest }) {
   const { register, login } = useAuth();
@@ -48,7 +47,7 @@ export default function AuthPage({ onContinueAsGuest }) {
         {/* ── Brand / Logo ── */}
         <div className="brand">
           <div className="logo-frame">
-            <DaketiLogo className="brand-logo" />
+            <img src="/card-back-hero.jpg" className="brand-logo" alt="Daketi" />
           </div>
           <h1 className="lobby-wordmark">DAKETI</h1>
           <p className="lobby-tagline">The Art of the Steal</p>
