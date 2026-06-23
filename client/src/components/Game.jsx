@@ -440,19 +440,12 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
                         {p.name}{isCur && <span className="live-dot"/>}
                       </div>
                       <div className="opp-meta">
-                        {p.lockedSetCount > 0 && <span>🔒×{p.lockedSetCount}</span>}
+                        {p.lockedScore > 0
+                          ? <span className="opp-lock-inline">🔒 {p.lockedScore} pts locked</span>
+                          : <span>collecting…</span>}
                       </div>
                     </div>
                   </div>
-
-                  {/* Single locked-points info box — fixed size, never grows with lock count */}
-                  {p.lockedScore > 0 && (
-                    <div className="opp-lock-box">
-                      <span className="opp-lock-icon">🔒</span>
-                      <span className="opp-lock-pts">{p.lockedScore}</span>
-                      <span className="opp-lock-label">pts</span>
-                    </div>
-                  )}
 
                   <div className="opp-hand-pile">
                     {Array.from({ length: Math.min(p.handCount, 5) }).map((_, i) => (
@@ -533,6 +526,7 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
           <div className={`g-me ${isMyTurn ? 'g-me--active' : ''}`}>
             {me?.slots?.length > 0 && (
               <div className="my-stacks-row">
+                <div className="my-stacks-scroll">
                 <div className="my-stacks">
                   {me.slots.map((slot, i) => {
                     const isLast     = i === me.slots.length - 1;
@@ -558,6 +552,7 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
                       </div>
                     );
                   })}
+                </div>
                 </div>
               </div>
             )}

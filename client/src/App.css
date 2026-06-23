@@ -419,8 +419,8 @@ body {
 ═══════════════════════════════════════ */
 .hc {
   position: relative;
-  width: 56px; height: 84px;
-  border-radius: 8px;
+  width: 50px; height: 75px;
+  border-radius: 7px;
   background: linear-gradient(165deg, #FFFFF8 0%, #FFF8DC 55%, #FFF2C0 100%);
   border: 1px solid #C8A060;
   box-shadow: 0 3px 10px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.9);
@@ -706,20 +706,11 @@ body {
 .opp-facedown  { position: absolute; }
 .opp-back { transform: scale(.78); transform-origin: left top; }
 
-/* Single fixed-size locked-points info box — replaces per-slot lock cards */
-.opp-lock-box {
-  display: flex; align-items: center; gap: .3rem; flex-shrink: 0;
-  background: rgba(212,175,55,.07);
-  border: 1px solid rgba(212,175,55,.22);
-  border-radius: 8px; padding: .22rem .55rem;
-}
-.opp-lock-icon { font-size: .78rem; line-height: 1; }
-.opp-lock-pts {
-  font-family: 'Cinzel', serif; font-size: var(--fs-sm);
-  font-weight: var(--fw-black); color: var(--gold); line-height: 1;
-}
-.opp-lock-label {
-  font-size: var(--fs-2xs); color: var(--text-dim); white-space: nowrap; line-height: 1;
+/* Lock info inline in opp-meta — no extra row, no layout impact */
+.opp-lock-inline {
+  color: var(--gold); font-weight: var(--fw-bold);
+  font-family: 'Cinzel', serif; font-size: var(--fs-2xs);
+  letter-spacing: .03em;
 }
 
 /* Stealable top card — fixed-height slot so opp area never shifts */
@@ -870,8 +861,9 @@ body {
 
 /* ── My area ── */
 .g-me {
-  display: flex; flex-direction: column; gap: .4rem; flex-shrink: 0;
+  display: flex; flex-direction: column; gap: .35rem; flex-shrink: 0;
   border-radius: 10px; transition: box-shadow .3s;
+  padding: .3rem .4rem;
 }
 /* Gold halo when it's the player's turn — replaces the removed text indicators */
 .g-me--active {
@@ -883,10 +875,15 @@ body {
   50%      { box-shadow: 0 0 0 2px rgba(212,175,55,.68), 0 0 38px rgba(212,175,55,.38); }
 }
 
-/* Own stacks */
-.my-stacks-row { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
+/* Own stacks — single scrollable row, never wraps (height stays fixed) */
+.my-stacks-row   { display: flex; align-items: center; gap: .5rem; }
+.my-stacks-scroll {
+  flex: 1; min-width: 0;
+  overflow-x: auto; scrollbar-width: none;
+}
+.my-stacks-scroll::-webkit-scrollbar { display: none; }
 .my-stacks-lbl { font-size: var(--fs-xs); color: var(--text-dim); font-weight: var(--fw-semi); white-space: nowrap; flex-shrink: 0; }
-.my-stacks     { display: flex; gap: .4rem; flex-wrap: wrap; align-items: flex-end; }
+.my-stacks     { display: flex; gap: .4rem; flex-wrap: nowrap; align-items: flex-end; }
 
 /* Thin vertical rule between locked sets (left) and active stacks (right) */
 .stacks-divider {
@@ -1430,14 +1427,16 @@ body {
    RESPONSIVE
 ═══════════════════════════════════════ */
 @media (max-width: 480px) {
-  /* ── Hand cards: slightly smaller on mobile ── */
-  .hc { width: 44px; height: 67px; }
-  .hc-rank { font-size: 11px; }
-  .hc-suit { font-size: 8px; }
-  .hc-pips { top: 16px; bottom: 16px; font-size: 8px; }
-  .hc-face-svg { height: calc(100% - 26px); }
+  /* ── Hand cards: compact on mobile so 5 cards fit with margins ── */
+  .hc { width: 40px; height: 60px; border-radius: 6px; }
+  .hc-rank { font-size: 10px; }
+  .hc-suit { font-size: 7.5px; }
+  .hc-pips { top: 14px; bottom: 14px; font-size: 7.5px; }
+  .hc-face-svg { height: calc(100% - 24px); }
   /* Table margins tighter on mobile */
-  .g-table { padding: .45rem .6rem; gap: .4rem; }
+  .g-table { padding: .4rem .55rem; gap: .38rem; }
+  /* Inner player area — slightly tighter */
+  .g-me { padding: .2rem .3rem; }
   /* Table card pips — small and tight */
   .tc-pips { font-size: 6px; }
   .tc-rank { font-size: 8px; }
