@@ -507,7 +507,7 @@ body {
   cursor: pointer;
   position: relative; z-index: 3;
 }
-.tc-glow:hover { transform: translateY(-6px) scale(1.13); }
+.tc-glow:hover { transform: scale(1.13); } /* scale in place — no translateY avoids top-clipping */
 .tc-pulse { animation: tcpulse .85s infinite; }
 @keyframes tcpulse {
   0%,100% { box-shadow: 0 0 0 2px var(--gold), 0 0 10px rgba(212,175,55,.5); }
@@ -812,11 +812,14 @@ body {
   scrollbar-width: none; max-width: 100%;
 }
 .floor-scroll::-webkit-scrollbar { display: none; }
-/* Floor cards — inner flex row, allows vertical overflow for scale effect */
+/* Floor cards — inner flex row
+   Padding math: scale(1.13) on 60px card = 3.9px above top. Pulsing glow at peak = ring(3)+blur(18)=21px.
+   Total upward extension = 3.9+21 = 24.9px → need ≥25px of top padding inside the scroll container.
+   Horizontal: glow extends ~20px sideways → 22px side padding keeps edge cards' glow within bounds. */
 .floor-cards {
   display: flex; gap: .35rem; flex-wrap: nowrap;
   align-items: center; min-height: 72px;
-  padding-top: 8px; /* headroom for cards to scale upward without clipping */
+  padding: 28px 22px 8px;
 }
 /* Deck zone — fixed height so it never shifts */
 .deck-zone { position: relative; display: flex; align-items: center; min-height: 96px; flex-shrink: 0; }
@@ -963,19 +966,23 @@ body {
   padding: 0 .75rem;
 }
 .hand-scroll {
-  flex: 0 1 auto;          /* shrinks to content, does NOT fill all space */
+  flex: 0 1 auto;
   min-width: 0;
   max-width: calc(100% - 80px);
   overflow-x: auto;
-  padding-top: 12px;
-  margin-top: -12px;
+  /* scale(1.14) on 75px card = 5.25px up. Ring(2.5)+blur(22) = 24.5px. Total = 29.75px.
+     36px padding-top keeps the full glow inside this scroll container's bounds.
+     margin-top compensates so cards stay at the same visual position. */
+  padding-top: 36px;
+  margin-top: -36px;
   scrollbar-width: none;
 }
 .hand-scroll::-webkit-scrollbar { display: none; }
 .hand-row {
   display: flex; gap: .4rem;
   flex-wrap: nowrap; overflow: visible;
-  padding-bottom: 12px;
+  /* 28px side padding so edge cards' 24.5px glow fits inside the scroll container */
+  padding: 0 28px 12px;
   align-items: center;
   min-width: 100%;
   justify-content: center;
