@@ -1,7 +1,17 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import socket from '../socket.js';
 
-const ICE = [{ urls: 'stun:stun.l.google.com:19302' }];
+// STUN: helps peers discover their public IP.
+// TURN: relays audio when a direct connection is blocked by NAT/firewall.
+// Without TURN, voice only works on the same LAN (same WiFi).
+// openrelay.metered.ca is a free public TURN relay for open-source projects.
+const ICE = [
+  { urls: 'stun:stun.l.google.com:19302' },
+  { urls: 'stun:stun1.l.google.com:19302' },
+  { urls: 'turn:openrelay.metered.ca:80',                username: 'openrelayproject', credential: 'openrelayproject' },
+  { urls: 'turn:openrelay.metered.ca:443',               username: 'openrelayproject', credential: 'openrelayproject' },
+  { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
+];
 
 export function useVoiceChat(myId) {
   const [active,       setActive]       = useState(false);
@@ -16,8 +26,8 @@ export function useVoiceChat(myId) {
   const analyser        = useRef(null);
   const animFrame       = useRef(null);
   const speakerMutedRef = useRef(false);
-  // Sync ref so signal handler always reads current active state without waiting for re-render
   const activeRef       = useRef(false);
+  const joiningRef      = useRef(false); // guard against rapid join/leave race
 
   const dropPeer = useCallback(id => {
     peers.current[id]?.close();
@@ -46,7 +56,7 @@ export function useVoiceChat(myId) {
         audios.current[peerId] = el;
       }
       el.srcObject = e.streams[0];
-      // Explicitly call play() — autoplay alone is blocked on many browsers
+      // Explicitly call play() — autoplay attribute alone is blocked on Chrome/Safari
       el.play().catch(() => {});
     };
     pc.onconnectionstatechange = () => {
@@ -57,28 +67,34 @@ export function useVoiceChat(myId) {
 
   useEffect(() => {
     async function onSignal({ fromId, type, data }) {
-      if (!activeRef.current && type !== 'peer_joined') return;
-      if (type === 'peer_joined') {
-        if (!activeRef.current) return;
-        const pc = getPeer(data.peerId);
-        const offer = await pc.createOffer();
-        await pc.setLocalDescription(offer);
-        socket.emit('webrtc_signal', { targetId: data.peerId, type: 'offer', data: offer });
-      } else if (type === 'offer') {
-        const pc = getPeer(fromId);
-        await pc.setRemoteDescription(new RTCSessionDescription(data));
-        const answer = await pc.createAnswer();
-        await pc.setLocalDescription(answer);
-        socket.emit('webrtc_signal', { targetId: fromId, type: 'answer', data: answer });
-      } else if (type === 'answer') {
-        await peers.current[fromId]?.setRemoteDescription(new RTCSessionDescription(data));
-      } else if (type === 'ice') {
-        try { await peers.current[fromId]?.addIceCandidate(new RTCIceCandidate(data)); } catch (_) {}
+      try {
+        if (!activeRef.current && type !== 'peer_joined') return;
+        if (type === 'peer_joined') {
+          if (!activeRef.current) return;
+          const pc = getPeer(data.peerId);
+          const offer = await pc.createOffer();
+          await pc.setLocalDescription(offer);
+          socket.emit('webrtc_signal', { targetId: data.peerId, type: 'offer', data: offer });
+        } else if (type === 'offer') {
+          const pc = getPeer(fromId);
+          // Pass plain object directly — new RTCSessionDescription() is deprecated
+          await pc.setRemoteDescription(data);
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+          socket.emit('webrtc_signal', { targetId: fromId, type: 'answer', data: answer });
+        } else if (type === 'answer') {
+          await peers.current[fromId]?.setRemoteDescription(data);
+        } else if (type === 'ice') {
+          await peers.current[fromId]?.addIceCandidate(data);
+        }
+      } catch (e) {
+        // WebRTC negotiation failed — drop the peer so a re-join can reattempt
+        if (fromId) dropPeer(fromId);
       }
     }
     socket.on('webrtc_signal', onSignal);
     return () => socket.off('webrtc_signal', onSignal);
-  }, [getPeer]); // activeRef is stable; no need to re-register on active change
+  }, [getPeer, dropPeer]);
 
   function startVolumeDetect(mediaStream) {
     try {
@@ -99,12 +115,13 @@ export function useVoiceChat(myId) {
     } catch (_) {}
   }
 
-  // Join voice — opens mic, connects to room
   const join = useCallback(async () => {
+    if (joiningRef.current || activeRef.current) return; // prevent double-join
+    joiningRef.current = true;
     try {
       const s = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
       stream.current = s;
-      activeRef.current = true; // sync immediately so signal handler sees it right away
+      activeRef.current = true;
       setActive(true);
       setMicMuted(false);
       setError('');
@@ -112,14 +129,16 @@ export function useVoiceChat(myId) {
       socket.emit('voice_join');
     } catch (e) {
       setError(e.name === 'NotAllowedError' ? 'Mic access denied' : 'Could not open mic');
+    } finally {
+      joiningRef.current = false;
     }
   }, []);
 
-  // Leave voice — closes mic and all peer connections
   const leave = useCallback(() => {
+    if (!activeRef.current) return;
     stream.current?.getTracks().forEach(t => t.stop());
     stream.current = null;
-    Object.keys(peers.current).forEach(dropPeer);
+    Object.keys(peers.current).forEach(id => dropPeer(id));
     cancelAnimationFrame(animFrame.current);
     activeRef.current = false;
     setActive(false);
@@ -128,19 +147,15 @@ export function useVoiceChat(myId) {
     socket.emit('voice_leave');
   }, [dropPeer]);
 
-  // Mute/unmute mic — disables audio tracks WITHOUT dropping peer connections
-  // Other players keep hearing silence; you still hear them.
   const toggleMic = useCallback(() => {
     if (!stream.current) return;
     stream.current.getAudioTracks().forEach(t => { t.enabled = !t.enabled; });
     setMicMuted(m => {
-      if (!m) setTalking(false); // clear indicator when muting
+      if (!m) setTalking(false);
       return !m;
     });
   }, []);
 
-  // Mute/unmute speaker — mutes the <audio> elements for all peers
-  // Your mic is unaffected; you can still talk without hearing others.
   const toggleSpeaker = useCallback(() => {
     setSpeakerMuted(prev => {
       const next = !prev;

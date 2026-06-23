@@ -280,10 +280,12 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
   const [hintToast,  setHintToast] = useState('');
 
   const prevHandRef    = useRef([]);
-  const hintTimerRef   = useRef(null);
-  const prevMsgCount   = useRef(0);
-  const prevStateRef    = useRef(null);
-  const gameOverSfxDone = useRef(false);
+  const hintTimerRef     = useRef(null);
+  const feedbackTimerRef = useRef(null);
+  const errTimerRef      = useRef(null);
+  const prevMsgCount     = useRef(0);
+  const prevStateRef     = useRef(null);
+  const gameOverSfxDone  = useRef(false);
 
   const voice = useVoiceChat(myId);
   const ach   = useAchievements();
@@ -351,15 +353,24 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
     prevStateRef.current = state;
   }, [state, myId]);
 
+  function showFeedback(msg) {
+    clearTimeout(feedbackTimerRef.current);
+    setFeedback(msg);
+    feedbackTimerRef.current = setTimeout(() => setFeedback(''), 2600);
+  }
+  function showErr(msg) {
+    clearTimeout(errTimerRef.current);
+    setErr(msg);
+    errTimerRef.current = setTimeout(() => setErr(''), 3000);
+  }
   function act(action, msg) {
     socket.emit('game_action', action, res => {
       if (!res.ok) { showErr(res.error); return; }
       setSel(null);
       if (action.type === 'DROP') sfx.drop();
-      if (msg) { setFeedback(msg); setTimeout(() => setFeedback(''), 2600); }
+      if (msg) showFeedback(msg);
     });
   }
-  function showErr(msg) { setErr(msg); setTimeout(() => setErr(''), 3000); }
   function pick(card) {
     if (!isMyTurn) return;
     const next = sel?.id === card.id ? null : card;
