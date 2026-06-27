@@ -796,10 +796,12 @@ body {
 .felt-corner--br::before { width: 12px; height: 1.5px; bottom: -3px; right: 0; }
 .felt-corner--br::after  { width: 1.5px; height: 12px; bottom: -3px; right: 0; }
 
-.felt-row { display: flex; gap: 1.2rem; align-items: flex-start; justify-content: center; flex-wrap: nowrap; position: relative; z-index: 1; }
-.felt-col { display: flex; flex-direction: column; align-items: center; gap: .3rem; flex-shrink: 1; min-width: 0; }
-/* Felt section labels — styled like the ribbon banner design element */
+/* felt-row fills g-felt's full height so align-items:center vertically centers both columns */
+.felt-row { display: flex; gap: 1.2rem; align-items: center; justify-content: center; flex-wrap: nowrap; position: relative; z-index: 1; height: 100%; }
+.felt-col { display: flex; flex-direction: column; align-items: center; flex-shrink: 1; min-width: 0; position: relative; }
+/* Label floats out of layout flow so only card content determines vertical centering */
 .felt-lbl {
+  position: absolute; top: 4px; left: 50%; transform: translateX(-50%); white-space: nowrap;
   font-size: var(--fs-2xs); text-transform: uppercase; letter-spacing: .12em;
   color: rgba(212,175,55,.55);
   font-family: 'Cinzel', serif; font-weight: var(--fw-semi);
@@ -815,13 +817,13 @@ body {
 }
 .floor-scroll::-webkit-scrollbar { display: none; }
 /* Floor cards — inner flex row
-   Padding math: scale(1.13) on 60px card = 3.9px above top. Pulsing glow at peak = ring(3)+blur(18)=21px.
-   Total upward extension = 3.9+21 = 24.9px → 34px (extra buffer for mobile subpixel rendering).
-   Horizontal: glow extends ~21px sideways → 28px side padding for mobile safety. */
+   Glow math: scale(1.13) on 60px = 3.9px above/below. Peak glow ring(3)+blur(18)=21px.
+   Total radial extension ≈ 24.9px → 26px symmetric padding (top=bottom) keeps card centered
+   within floor-scroll, glow contained, and horizontal: 28px > 21px side extension. */
 .floor-cards {
   display: flex; gap: .35rem; flex-wrap: nowrap;
   align-items: center; min-height: 72px;
-  padding: 34px 28px 8px;
+  padding: 26px 28px 26px;
 }
 /* Deck zone — fixed height so it never shifts */
 .deck-zone { position: relative; display: flex; align-items: center; min-height: 96px; flex-shrink: 0; }
