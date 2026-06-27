@@ -984,7 +984,6 @@ body {
   flex-wrap: nowrap; overflow: visible;
   padding: 4px 8px 12px;
   align-items: center;
-  min-width: 100%;
   justify-content: center;
 }
 
