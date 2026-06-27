@@ -1479,8 +1479,10 @@ body {
   .lobby-wordmark  { font-size: 1.8rem; }
   .lobby-content   { gap: .45rem; padding: .7rem 1.2rem; }
   .lobby-form-card { padding: .75rem .9rem; gap: .48rem; }
-  .lf-input        { padding: .5rem .8rem; }
-  .lf-btn          { padding: .55rem 1rem; }
+  .lf-input          { padding: .5rem .8rem; }
+  .lf-input--icon    { padding-left: 2.45rem; }  /* restore icon clearance overridden by shorthand above */
+  .lf-input--pw      { padding-right: 2.6rem; }
+  .lf-btn            { padding: .55rem 1rem; }
 }
 
 /* Auth page — short screens (landscape phones or very short laptops) */
