@@ -766,8 +766,8 @@ body {
   box-shadow: 0 0 0 1.5px #5a3a08, inset 0 0 40px rgba(0,0,0,.45), var(--shadow);
   padding: .45rem .65rem;
   display: flex; flex-direction: column; gap: .3rem;
-  flex: none;         /* never grow/shrink — floor table is always the same size */
-  height: 140px;      /* fixed — was min-height: 140px which allowed layout shift */
+  flex: 0 0 auto;     /* don't flex in parent — size to own content */
+  min-height: 140px;  /* grows to fit 2+ rows of floor cards */
   position: relative; overflow: visible;
 }
 /* Ornate corner suit icons — styled after the design elements filigree corners */
@@ -797,7 +797,7 @@ body {
 .felt-corner--br::after  { width: 1.5px; height: 12px; bottom: -3px; right: 0; }
 
 /* felt-row fills g-felt's full height so align-items:center vertically centers both columns */
-.felt-row { display: flex; gap: 1.2rem; align-items: center; justify-content: center; flex-wrap: nowrap; position: relative; z-index: 1; height: 100%; }
+.felt-row { display: flex; gap: 1.2rem; align-items: center; justify-content: center; flex-wrap: nowrap; position: relative; z-index: 1; flex: 1; }
 .felt-col { display: flex; flex-direction: column; align-items: center; flex-shrink: 1; min-width: 0; position: relative; }
 /* Label floats out of layout flow so only card content determines vertical centering */
 .felt-lbl {
@@ -812,8 +812,8 @@ body {
 
 /* Floor scroll wrapper — handles horizontal overflow independently */
 .floor-scroll {
-  overflow-x: auto; overflow-y: visible;
-  scrollbar-width: none; max-width: 100%;
+  overflow: visible;
+  max-width: 100%;
 }
 .floor-scroll::-webkit-scrollbar { display: none; }
 /* Floor cards — inner flex row
@@ -821,8 +821,9 @@ body {
    Total radial extension ≈ 24.9px → 26px symmetric padding (top=bottom) keeps card centered
    within floor-scroll, glow contained, and horizontal: 28px > 21px side extension. */
 .floor-cards {
-  display: flex; gap: .35rem; flex-wrap: nowrap;
+  display: flex; gap: .35rem; flex-wrap: wrap;
   align-items: center; min-height: 72px;
+  justify-content: center;
   padding: 26px 28px 26px;
 }
 /* Deck zone — fixed height so it never shifts */
@@ -973,21 +974,15 @@ body {
 .hand-scroll {
   flex: 0 1 auto;
   min-width: 0;
-  max-width: calc(100% - 80px);
-  overflow-x: auto;
-  /* scale(1.14) on 75px card = 5.25px up. Ring(2.5)+blur(22) = 24.5px. Total = 29.75px.
-     42px padding-top keeps the full glow inside this scroll container's bounds (extra buffer for mobile).
-     margin-top compensates so cards stay at the same visual position. */
-  padding-top: 42px;
-  margin-top: -42px;
-  scrollbar-width: none;
+  overflow: visible;
+  padding-top: 16px;
+  margin-top: -16px;
 }
 .hand-scroll::-webkit-scrollbar { display: none; }
 .hand-row {
   display: flex; gap: .4rem;
   flex-wrap: nowrap; overflow: visible;
-  /* 34px side padding so edge cards' 24.5px glow fits inside the scroll container (mobile buffer) */
-  padding: 0 34px 12px;
+  padding: 4px 8px 12px;
   align-items: center;
   min-width: 100%;
   justify-content: center;
@@ -1465,6 +1460,10 @@ body {
   .chat-panel--open {
     width: 100%; position: absolute; right: 0; top: 0; bottom: 0; z-index: 200;
   }
+
+  /* ── Hand: column layout on mobile so 5 cards get full width ── */
+  .hand-drop-row { flex-direction: column; align-items: center; gap: .5rem; }
+  .hand-scroll   { width: 100%; }
 
   /* ── Lobby ── */
   .lobby-wordmark { font-size: 2rem; }

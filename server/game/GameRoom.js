@@ -340,12 +340,18 @@ class GameRoom {
           ? { topCard: lastSlot.cards.at(-1), size: lastSlot.cards.length, locked: lastSlot.locked }
           : null;
 
-        // Only the last slot can be stolen (if unlocked). Every other slot is inherently safe.
-        // lockedScore = total score minus the one stealable slot's value.
-        const stealablePts = (lastSlot && !lastSlot.locked)
-          ? lastSlot.cards.reduce((sum, c) => sum + cardValue(c), 0)
-          : 0;
-        const lockedScore = currentScore - stealablePts;
+        // locked points = sum of all slots up to and including the last formally/implicitly
+        // locked slot. If no slot is locked at all, lockedScore = 0.
+        const lastLockedIdx = (() => {
+          for (let i = p.slots.length - 1; i >= 0; i--) {
+            if (p.slots[i].locked) return i;
+          }
+          return -1;
+        })();
+        const lockedScore = lastLockedIdx === -1
+          ? 0
+          : p.slots.slice(0, lastLockedIdx + 1)
+              .reduce((sum, s) => sum + s.cards.reduce((pts, c) => pts + cardValue(c), 0), 0);
 
         return {
           id: p.id, name: p.name,
