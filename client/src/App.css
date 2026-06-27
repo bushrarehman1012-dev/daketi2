@@ -766,8 +766,8 @@ body {
   box-shadow: 0 0 0 1.5px #5a3a08, inset 0 0 40px rgba(0,0,0,.45), var(--shadow);
   padding: .45rem .65rem;
   display: flex; flex-direction: column; gap: .3rem;
-  flex: 0 0 auto;     /* don't flex in parent — size to own content */
-  min-height: 140px;  /* grows to fit 2+ rows of floor cards */
+  flex: 0 0 auto;   /* never shrink/grow in the parent column */
+  height: 185px;    /* fixed — sized for 2 rows of cards + 22px glow padding each side */
   position: relative; overflow: visible;
 }
 /* Ornate corner suit icons — styled after the design elements filigree corners */
@@ -810,21 +810,20 @@ body {
 .felt-div { width: 1px; height: 60px; background: rgba(255,255,255,.1); align-self: center; flex-shrink: 0; }
 .felt-empty { font-size: var(--fs-xs); color: rgba(255,255,255,.22); font-style: italic; }
 
-/* Floor scroll wrapper — handles horizontal overflow independently */
+/* Floor scroll wrapper — scrolls horizontally when cards overflow 2 rows */
 .floor-scroll {
-  overflow: visible;
-  max-width: 100%;
+  overflow-x: auto; overflow-y: visible;
+  scrollbar-width: none; max-width: 100%;
 }
 .floor-scroll::-webkit-scrollbar { display: none; }
-/* Floor cards — inner flex row
-   Glow math: scale(1.13) on 60px = 3.9px above/below. Peak glow ring(3)+blur(18)=21px.
-   Total radial extension ≈ 24.9px → 26px symmetric padding (top=bottom) keeps card centered
-   within floor-scroll, glow contained, and horizontal: 28px > 21px side extension. */
+/* Floor cards — fixed 2-row grid; extra cards scroll horizontally.
+   22px padding: glow extends ~20px → stays inside floor-scroll bounds. */
 .floor-cards {
-  display: flex; gap: .35rem; flex-wrap: wrap;
-  align-items: center; min-height: 72px;
-  justify-content: center;
-  padding: 26px 28px 26px;
+  display: grid;
+  grid-template-rows: repeat(2, 60px);
+  grid-auto-flow: column;
+  gap: .35rem;
+  padding: 22px 28px;
 }
 /* Deck zone — fixed height so it never shifts */
 .deck-zone { position: relative; display: flex; align-items: center; min-height: 96px; flex-shrink: 0; }
