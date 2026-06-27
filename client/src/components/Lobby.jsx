@@ -56,6 +56,13 @@ export default function Lobby({ onJoined, onlineUsers = [], mySocketId, user, on
     }));
   }
 
+  function playVsBot() {
+    go(() => socket.emit('create_vs_bot', { name }, res => {
+      setBusy(false);
+      if (res.ok) onJoined(res.state); else setErr(res.error);
+    }));
+  }
+
   return (
     <div className="lobby-root">
       {/* Faint suit watermarks */}
@@ -100,18 +107,22 @@ export default function Lobby({ onJoined, onlineUsers = [], mySocketId, user, on
 
           <div className="lf-tabs">
             <button className={`lf-tab ${tab === 'create' ? 'lf-tab--active' : ''}`} onClick={() => setTab('create')}>
-              Create Room
+              Create
             </button>
             <button className={`lf-tab ${tab === 'join' ? 'lf-tab--active' : ''}`} onClick={() => setTab('join')}>
-              Join Room
+              Join
+            </button>
+            <button className={`lf-tab ${tab === 'bot' ? 'lf-tab--active' : ''}`} onClick={() => setTab('bot')}>
+              vs Computer
             </button>
           </div>
 
-          {tab === 'create' ? (
+          {tab === 'create' && (
             <button className="lf-btn lf-btn--primary" onClick={create} disabled={busy}>
               {busy ? 'Connecting…' : '+ Create New Room'}
             </button>
-          ) : (
+          )}
+          {tab === 'join' && (
             <div className="lf-join-row">
               <input className="lf-input lf-input--code" placeholder="ROOM" maxLength={4}
                 value={code} onChange={e => setCode(e.target.value.toUpperCase())}
@@ -120,6 +131,11 @@ export default function Lobby({ onJoined, onlineUsers = [], mySocketId, user, on
                 {busy ? '…' : 'Join'}
               </button>
             </div>
+          )}
+          {tab === 'bot' && (
+            <button className="lf-btn lf-btn--bot" onClick={playVsBot} disabled={busy}>
+              {busy ? 'Starting…' : '▶  Play vs Computer'}
+            </button>
           )}
 
           {err && <p className="lf-error">⚠ {err}</p>}

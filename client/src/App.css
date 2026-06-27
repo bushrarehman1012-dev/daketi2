@@ -278,6 +278,14 @@ body {
   box-shadow: 0 4px 16px rgba(26,63,170,.3);
 }
 .lf-btn--secondary:hover:not(:disabled) { background: linear-gradient(135deg, #3366ee, var(--royal-lt)); transform: translateY(-1px); }
+.lf-btn--bot {
+  background: linear-gradient(135deg, #1a0a38, #0e0522);
+  color: #c8b0f0; border: 1px solid rgba(140,90,220,.4);
+}
+.lf-btn--bot:hover:not(:disabled) {
+  background: linear-gradient(135deg, #2e1260, #1a0a38);
+  transform: translateY(-1px);
+}
 .lf-btn:disabled { opacity: .38; cursor: not-allowed; }
 
 .lf-join-row { display: flex; gap: .5rem; }

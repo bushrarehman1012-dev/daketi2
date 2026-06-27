@@ -31,6 +31,50 @@ class GameRoom {
     return player;
   }
 
+  addBot(name = 'Computer') {
+    if (this.phase !== 'lobby') throw new Error('Game already in progress');
+    const botId = `bot_${this.id}`;
+    const bot = { id: botId, name, hand: [], slots: [], score: 0, isBot: true };
+    this.players.push(bot);
+    return bot;
+  }
+
+  // Returns the best action for the current bot player.
+  botMove() {
+    const bot = this.getCurrentPlayer();
+    if (!bot?.isBot) return null;
+
+    // 1. Steal: take opponent's last unlocked slot if we hold a matching rank
+    for (const opp of this.players) {
+      if (opp.id === bot.id) continue;
+      const last = opp.slots[opp.slots.length - 1];
+      if (!last || last.locked) continue;
+      const top = last.cards.at(-1);
+      const card = bot.hand.find(c => c.rank === top.rank);
+      if (card) return { type: 'STEAL', handCardId: card.id, targetPlayerId: opp.id };
+    }
+
+    // 2. PAIR_OWN: extend own last unlocked slot
+    const myLast = bot.slots[bot.slots.length - 1];
+    if (myLast && !myLast.locked) {
+      const top = myLast.cards.at(-1);
+      const card = bot.hand.find(c => c.rank === top.rank);
+      if (card) return { type: 'PAIR_OWN', handCardId: card.id };
+    }
+
+    // 3. PAIR with floor: prefer highest-value match
+    let bestPair = null;
+    for (const hc of bot.hand) {
+      const fc = this.floor.find(c => c.rank === hc.rank);
+      if (fc && (!bestPair || cardValue(hc) > cardValue(bestPair.hc))) bestPair = { hc, fc };
+    }
+    if (bestPair) return { type: 'PAIR', handCardId: bestPair.hc.id, floorCardId: bestPair.fc.id };
+
+    // 4. DROP: discard lowest-value card
+    const sorted = [...bot.hand].sort((a, b) => cardValue(a) - cardValue(b));
+    return { type: 'DROP', handCardId: sorted[0].id };
+  }
+
   removePlayer(socketId) {
     this.players = this.players.filter(p => p.id !== socketId);
     if (this.players.length > 0 && this.hostId === socketId) this.hostId = this.players[0].id;

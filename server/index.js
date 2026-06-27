@@ -58,7 +58,9 @@ function handlePlayerLeave(socketId, roomId) {
   if (!room) return;
   const wasActive = room.phase === 'playing' || room.phase === 'endgame';
   room.removePlayer(socketId);
-  if (room.players.length === 0) {
+  // If no human players remain (e.g. human left a vs-bot room), destroy the room
+  const humans = room.players.filter(p => !p.isBot);
+  if (humans.length === 0) {
     rooms.delete(roomId);
   } else if (wasActive && room.players.length < 2) {
     room.phase = 'abandoned';
@@ -66,6 +68,33 @@ function handlePlayerLeave(socketId, roomId) {
   } else {
     broadcast(room);
   }
+}
+
+// Schedule the bot's next move after a short human-like delay.
+function scheduleBotMove(room) {
+  const cur = room.getCurrentPlayer();
+  if (!cur?.isBot) return;
+  if (room.phase !== 'playing' && room.phase !== 'endgame') return;
+  setTimeout(() => {
+    if (!rooms.has(room.id)) return;
+    const current = room.getCurrentPlayer();
+    if (!current?.isBot) return;
+    if (room.phase !== 'playing' && room.phase !== 'endgame') return;
+    try {
+      const action = room.botMove();
+      if (!action) return;
+      room.handleAction(current.id, action);
+      room.lastActivity = Date.now();
+      broadcast(room);
+      if (room.phase === 'finished') {
+        const hallOfFame = recordGameScores(room.players);
+        io.to(room.id).emit('highscores', hallOfFame);
+      }
+      scheduleBotMove(room);
+    } catch (e) {
+      console.error('bot move error:', e.message);
+    }
+  }, 750);
 }
 
 // ── Highscore persistence ──────────────────────────────────────────────────
@@ -237,6 +266,26 @@ io.on('connection', socket => {
     } catch (e) { cb({ ok: false, error: e.message }); }
   });
 
+  socket.on('create_vs_bot', ({ name }, cb) => {
+    try {
+      const code = makeCode();
+      const room = new GameRoom(code);
+      rooms.set(code, room);
+      const trimmedName = (name || '').trim() || 'Player';
+      room.addPlayer(socket.id, trimmedName);
+      room.addBot('Computer');
+      socket.join(code);
+      socket.data.roomId      = code;
+      socket.data.displayName = trimmedName;
+      if (trimmedName) onlineUsers.set(socket.id, { name: trimmedName, userId: socket.data.userId });
+      broadcastOnlineUsers();
+      room.startGame(socket.id);
+      broadcast(room);
+      scheduleBotMove(room); // in case bot is first to act
+      cb({ ok: true, state: room.getStateFor(socket.id) });
+    } catch (e) { cb({ ok: false, error: e.message }); }
+  });
+
   socket.on('start_game', (_, cb) => {
     try {
       const room = rooms.get(socket.data.roomId);
@@ -259,6 +308,7 @@ io.on('connection', socket => {
       room.handleAction(socket.id, action);
       room.lastActivity = Date.now();
       broadcast(room);
+      scheduleBotMove(room); // no-op for multiplayer; fires for vs-bot games
 
       // When game finishes: save scores and broadcast hall of fame
       if (room.phase === 'finished') {
