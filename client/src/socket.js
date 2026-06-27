@@ -13,7 +13,8 @@ const socket = io(SERVER_URL, {
   auth: { token: getToken() },
 });
 
-let _lastId = null;
+// Persist across page refreshes within the same tab (survives mobile reload, not new tab)
+let _lastId = sessionStorage.getItem('daketi_sid') || null;
 
 socket.on('connect', () => {
   // Refresh the auth token each reconnect in case user logged in/out
@@ -24,6 +25,7 @@ socket.on('connect', () => {
     socket.emit('reconnect_player', { prevSocketId: _lastId, name });
   }
   _lastId = socket.id;
+  sessionStorage.setItem('daketi_sid', socket.id);
 });
 
 // Heartbeat — keeps the server's lastActivity fresh so idle-cleanup doesn't fire
@@ -43,6 +45,7 @@ if (typeof document !== 'undefined') {
       const name = localStorage.getItem('daketi_name') || '';
       socket.emit('reconnect_player', { prevSocketId: _lastId, name });
       _lastId = socket.id;
+      sessionStorage.setItem('daketi_sid', socket.id);
     }
   });
 }

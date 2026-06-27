@@ -199,9 +199,39 @@ io.on('connection', socket => {
     try {
       const room = rooms.get((roomId || '').toUpperCase());
       if (!room) throw new Error('Room not found');
-      room.addPlayer(socket.id, (name || '').trim() || 'Player');
+
+      // During an active game, check reconnectBuf for a matching name — if found, restore
+      // the existing slot instead of adding a new player (prevents the "third player" bug
+      // when reconnect_player races or the client page-reloaded through the auth screen).
+      const trimmedName = (name || '').trim() || 'Player';
+      if (room.phase === 'playing' || room.phase === 'endgame') {
+        for (const [prevId, buf] of reconnectBuf) {
+          if (buf.roomId === room.id && buf.name === trimmedName) {
+            clearTimeout(buf.timer);
+            reconnectBuf.delete(prevId);
+            const player = room.players.find(p => p.id === prevId);
+            if (player) {
+              player.id = socket.id;
+              if (room.hostId === prevId) room.hostId = socket.id;
+            }
+            socket.data.roomId      = room.id;
+            socket.data.displayName = trimmedName;
+            socket.join(room.id);
+            onlineUsers.set(socket.id, { name: trimmedName, userId: socket.data.userId });
+            broadcastOnlineUsers();
+            room.lastActivity = Date.now();
+            broadcast(room);
+            socket.to(room.id).emit('opponent_reconnected', { name: trimmedName });
+            cb({ ok: true, state: room.getStateFor(socket.id) });
+            return;
+          }
+        }
+      }
+
+      room.addPlayer(socket.id, trimmedName);
       socket.join(room.id);
       socket.data.roomId = room.id;
+      socket.data.displayName = trimmedName;
       broadcast(room);
       cb({ ok: true, state: room.getStateFor(socket.id) });
     } catch (e) { cb({ ok: false, error: e.message }); }
