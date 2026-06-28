@@ -31,7 +31,7 @@ const reconnectBuf = new Map(); // socketId → { roomId, name, userId?, timer }
 const roomGames    = new Map(); // roomId → gameId (active DB game record)
 
 // Timeout constants — all in milliseconds, easy to tune
-const RECONNECT_MS    = 3 * 60 * 1000;  // 3 min — grace window before treating disconnect as a leave
+const RECONNECT_MS    = 10 * 60 * 1000; // 10 min — grace window before treating disconnect as a leave
 const IDLE_CLEANUP_MS = 15 * 60 * 1000; // 15 min — destroy room after all players gone this long
 
 // Periodic idle-room cleanup: runs every 5 min, deletes rooms where every player
@@ -270,6 +270,7 @@ io.on('connection', socket => {
       // when reconnect_player races or the client page-reloaded through the auth screen).
       const trimmedName = (name || '').trim() || 'Player';
       if (room.phase === 'playing' || room.phase === 'endgame') {
+        // Path A: slot is in reconnectBuf (client disconnected gracefully, timer still running)
         for (const [prevId, buf] of reconnectBuf) {
           if (buf.roomId === room.id && buf.name === trimmedName) {
             clearTimeout(buf.timer);
@@ -290,6 +291,27 @@ io.on('connection', socket => {
             cb({ ok: true, state: room.getStateFor(socket.id) });
             return;
           }
+        }
+
+        // Path B: reconnect_player already swapped the ID into the room, but App
+        // lost state and the player is manually re-joining (would create a 3rd slot).
+        // Detect by name match directly in room.players and re-swap to current socket.
+        const existing = room.players.find(p => !p.isBot && p.name === trimmedName);
+        if (existing) {
+          const oldId = existing.id;
+          existing.id = socket.id;
+          if (room.hostId === oldId) room.hostId = socket.id;
+          socket.data.roomId      = room.id;
+          socket.data.displayName = trimmedName;
+          socket.join(room.id);
+          onlineUsers.delete(oldId);
+          onlineUsers.set(socket.id, { name: trimmedName, userId: socket.data.userId });
+          broadcastOnlineUsers();
+          room.lastActivity = Date.now();
+          broadcast(room);
+          socket.to(room.id).emit('opponent_reconnected', { name: trimmedName });
+          cb({ ok: true, state: room.getStateFor(socket.id) });
+          return;
         }
       }
 

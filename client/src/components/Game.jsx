@@ -366,15 +366,17 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
         return;
       }
       const next = animQueueRef.current.shift();
-      // Compute fly target: centre of .g-opps relative to screen centre
-      const oppsEl = document.querySelector('.g-opps');
+      // Fly target: opponent's face-up card, or fall back to the whole opp area
+      const target = document.querySelector('.opp-topcard') || document.querySelector('.g-opps');
+      let targetX = 0;
       let targetY = -280;
-      if (oppsEl) {
-        const rect = oppsEl.getBoundingClientRect();
-        targetY = Math.round((rect.top + rect.height / 2) - window.innerHeight / 2);
+      if (target) {
+        const rect = target.getBoundingClientRect();
+        targetX = Math.round((rect.left + rect.width  / 2) - window.innerWidth  / 2);
+        targetY = Math.round((rect.top  + rect.height / 2) - window.innerHeight / 2);
       }
       animPlayingRef.current = true;
-      setPairAnim({ ...next, targetY, animKey: ++animKeyRef.current });
+      setPairAnim({ ...next, targetX, targetY, animKey: ++animKeyRef.current });
       animTimerRef.current.forEach(clearTimeout);
       const t = setTimeout(playNext, 1950);
       animTimerRef.current = [t];
@@ -449,7 +451,7 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
         <div
           key={pairAnim.animKey}
           className={`pair-fly${pairAnim.type === 'STEAL' ? ' pair-fly--steal' : ''}`}
-          style={{ '--fly-target-y': `${pairAnim.targetY ?? -280}px` }}
+          style={{ '--fly-target-x': `${pairAnim.targetX ?? 0}px`, '--fly-target-y': `${pairAnim.targetY ?? -280}px` }}
         >
           <div className="pair-fly-cards">
             {pairAnim.cards.map((card, i) => (

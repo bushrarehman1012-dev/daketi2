@@ -1068,18 +1068,19 @@ body {
   animation: pairFlyUp 1.85s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
 }
 
-/* Cards row */
-.pair-fly-cards { display: flex; gap: .5rem; align-items: center; }
+/* Cards row — tight gap so paired cards sit close */
+.pair-fly-cards { display: flex; gap: .15rem; align-items: center; }
 
-/* Individual card — padding gives glow room for 0.85× scaled .tc */
+/* Individual card — minimal padding for glow clearance; NO scale here */
 .pair-fly-card {
-  padding: 8px 6px;
+  padding: 5px 4px;
   filter: drop-shadow(0 0 14px rgba(212,175,55,.85))
           drop-shadow(0 3px 10px rgba(0,0,0,.6));
 }
-.pair-fly-card .tc { transform: scale(0.85); display: block; }
+/* .tc must not add its own transform — scale lives only in tiltA/tiltB */
+.pair-fly-card .tc { display: block; }
 
-/* Opposing tilts — naturalise the flight */
+/* Opposing tilts — rotation only on wrapper; scale controls card size */
 .pair-fly-card--0 { animation: tiltA 1.85s ease forwards; }
 .pair-fly-card--1 { animation: tiltB 1.85s ease forwards; }
 
@@ -1115,27 +1116,36 @@ body {
   text-shadow: 0 0 12px rgba(220,50,50,.8);
 }
 
-/* Main flight: rise from below → hold at centre → fly to --fly-target-y */
+/* Main flight: rise from below → hold centre → diagonal fly to opponent area.
+   X/Y targets are injected as CSS custom properties from JS. */
 @keyframes pairFlyUp {
-  0%   { opacity: 0; transform: translate(-50%, calc(-50% + 70px)) scale(0.5); }
-  13%  { opacity: 1; transform: translate(-50%, calc(-50% + 3px))  scale(1.05); }
-  24%  { opacity: 1; transform: translate(-50%, -50%)              scale(1.0); }
-  62%  { opacity: 1; transform: translate(-50%, -50%)              scale(1.0); }
-  100% { opacity: 0; transform: translate(-50%, calc(-50% + var(--fly-target-y, -280px))) scale(0.28); }
+  0%   { opacity: 0;
+         transform: translate(-50%, calc(-50% + 70px)) scale(0.5); }
+  13%  { opacity: 1;
+         transform: translate(-50%, calc(-50% + 3px))  scale(1.05); }
+  24%  { opacity: 1;
+         transform: translate(-50%, -50%)               scale(1.0); }
+  62%  { opacity: 1;
+         transform: translate(-50%, -50%)               scale(1.0); }
+  100% { opacity: 0;
+         transform: translate(
+           calc(-50% + var(--fly-target-x, 0px)),
+           calc(-50% + var(--fly-target-y, -280px))
+         ) scale(0.3); }
 }
 
-/* Card tilt: natural tumble then steady, lean on exit */
+/* Card tilts — scale here is the ONLY scale on the card; rotate adds natural tumble */
 @keyframes tiltA {
-  0%   { transform: scale(0.85) rotate(-10deg); }
-  24%  { transform: scale(0.85) rotate(0deg); }
-  62%  { transform: scale(0.85) rotate(0deg); }
-  100% { transform: scale(0.65) rotate(-5deg); }
+  0%   { transform: scale(0.88) rotate(-10deg); }
+  24%  { transform: scale(0.88) rotate(0deg); }
+  62%  { transform: scale(0.88) rotate(0deg); }
+  100% { transform: scale(0.55) rotate(-5deg); }
 }
 @keyframes tiltB {
-  0%   { transform: scale(0.85) rotate(10deg); }
-  24%  { transform: scale(0.85) rotate(0deg); }
-  62%  { transform: scale(0.85) rotate(0deg); }
-  100% { transform: scale(0.65) rotate(5deg); }
+  0%   { transform: scale(0.88) rotate(10deg); }
+  24%  { transform: scale(0.88) rotate(0deg); }
+  62%  { transform: scale(0.88) rotate(0deg); }
+  100% { transform: scale(0.55) rotate(5deg); }
 }
 
 /* Meta row fades in with cards, fades out before flight ends */
