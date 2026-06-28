@@ -285,6 +285,9 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
   const feedbackTimerRef = useRef(null);
   const errTimerRef      = useRef(null);
   const animTimerRef     = useRef([]);
+  const animQueueRef     = useRef([]);
+  const animPlayingRef   = useRef(false);
+  const animKeyRef       = useRef(0);
   const prevMsgCount     = useRef(0);
   const prevStateRef     = useRef(null);
   const gameOverSfxDone  = useRef(false);
@@ -356,16 +359,38 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
   }, [state, myId]);
 
   useEffect(() => {
-    function onActionAnim(data) {
+    function playNext() {
+      if (animQueueRef.current.length === 0) {
+        animPlayingRef.current = false;
+        setPairAnim(null);
+        return;
+      }
+      const next = animQueueRef.current.shift();
+      // Compute fly target: centre of .g-opps relative to screen centre
+      const oppsEl = document.querySelector('.g-opps');
+      let targetY = -280;
+      if (oppsEl) {
+        const rect = oppsEl.getBoundingClientRect();
+        targetY = Math.round((rect.top + rect.height / 2) - window.innerHeight / 2);
+      }
+      animPlayingRef.current = true;
+      setPairAnim({ ...next, targetY, animKey: ++animKeyRef.current });
       animTimerRef.current.forEach(clearTimeout);
-      setPairAnim(data);
-      const t = setTimeout(() => setPairAnim(null), 1850);
+      const t = setTimeout(playNext, 1950);
       animTimerRef.current = [t];
     }
+
+    function onActionAnim(data) {
+      animQueueRef.current.push(data);
+      if (!animPlayingRef.current) playNext();
+    }
+
     socket.on('action_anim', onActionAnim);
     return () => {
       socket.off('action_anim', onActionAnim);
       animTimerRef.current.forEach(clearTimeout);
+      animQueueRef.current = [];
+      animPlayingRef.current = false;
     };
   }, []);
 
@@ -421,17 +446,25 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
 
       {/* ── Pair / steal card travel animation ──────────────────────────── */}
       {pairAnim && (
-        <div className={`pair-fly${pairAnim.type === 'STEAL' ? ' pair-fly--steal' : ''}`}>
+        <div
+          key={pairAnim.animKey}
+          className={`pair-fly${pairAnim.type === 'STEAL' ? ' pair-fly--steal' : ''}`}
+          style={{ '--fly-target-y': `${pairAnim.targetY ?? -280}px` }}
+        >
           <div className="pair-fly-cards">
             {pairAnim.cards.map((card, i) => (
-              <div key={i} className={`pair-fly-card pair-fly-card--${i}`}>
+              <div key={i} className={`pair-fly-card pair-fly-card--${Math.min(i, 1)}`}>
                 <TableCard card={card} />
               </div>
             ))}
           </div>
-          {pairAnim.type === 'STEAL' && (
-            <div className="pair-fly-stolen">STOLEN</div>
-          )}
+          <div className="pair-fly-meta">
+            {pairAnim.type === 'PAIR_OWN' && pairAnim.slotSize && (
+              <span className="pair-fly-badge">×{pairAnim.slotSize}</span>
+            )}
+            {pairAnim.isLock && <span className="pair-fly-lock">🔒</span>}
+            {pairAnim.type === 'STEAL' && <span className="pair-fly-stolen">STOLEN</span>}
+          </div>
         </div>
       )}
 

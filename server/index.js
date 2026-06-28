@@ -69,7 +69,8 @@ function captureAnimData(room, playerId, action) {
       const hc   = player.hand.find(c => c.id === action.handCardId);
       const last = player.slots.at(-1);
       if (!hc || !last) return null;
-      return { type: 'PAIR_OWN', actorName: player.name, cards: [last.cards.at(-1), hc] };
+      // Send one card + new slot count so client can show "×3" / "×4" badge
+      return { type: 'PAIR_OWN', actorName: player.name, cards: [hc], slotSize: last.cards.length + 1 };
     }
     if (action.type === 'STEAL') {
       const hc     = player.hand.find(c => c.id === action.handCardId);
@@ -113,9 +114,13 @@ function scheduleBotMove(room) {
       const action = room.botMove();
       if (!action) return;
       const animData = captureAnimData(room, current.id, action);
+      const locksBefore = current.slots.filter(s => s.locked).length;
       room.handleAction(current.id, action);
       room.lastActivity = Date.now();
-      if (animData) io.to(room.id).emit('action_anim', animData);
+      if (animData) {
+        animData.isLock = current.slots.filter(s => s.locked).length > locksBefore;
+        io.to(room.id).emit('action_anim', animData);
+      }
       broadcast(room);
       if (room.phase === 'finished') {
         const hallOfFame = recordGameScores(room.players);
@@ -337,10 +342,14 @@ io.on('connection', socket => {
       const room = rooms.get(socket.data.roomId);
       if (!room) throw new Error('Not in a room');
       const animData = captureAnimData(room, socket.id, action);
+      const locksBefore = room.getPlayer(socket.id)?.slots.filter(s => s.locked).length ?? 0;
       room.handleAction(socket.id, action);
       room.lastActivity = Date.now();
-      // Send only to OTHER players — actor doesn't see their own pairs
-      if (animData) socket.to(room.id).emit('action_anim', animData);
+      if (animData) {
+        animData.isLock = (room.getPlayer(socket.id)?.slots.filter(s => s.locked).length ?? 0) > locksBefore;
+        // Send only to OTHER players — actor doesn't see their own pairs
+        socket.to(room.id).emit('action_anim', animData);
+      }
       broadcast(room);
       scheduleBotMove(room); // no-op for multiplayer; fires for vs-bot games
 
