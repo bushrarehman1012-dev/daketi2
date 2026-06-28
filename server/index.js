@@ -53,6 +53,35 @@ function broadcastOnlineUsers() {
   io.emit('online_users', list);
 }
 
+// Capture card data for the pair/steal animation BEFORE handleAction mutates state.
+function captureAnimData(room, playerId, action) {
+  if (!['PAIR', 'PAIR_OWN', 'STEAL'].includes(action.type)) return null;
+  const player = room.getPlayer(playerId);
+  if (!player) return null;
+  try {
+    if (action.type === 'PAIR') {
+      const hc = player.hand.find(c => c.id === action.handCardId);
+      const fc = room.floor.find(c => c.id === action.floorCardId);
+      if (!hc || !fc) return null;
+      return { type: 'PAIR', actorName: player.name, cards: [hc, fc] };
+    }
+    if (action.type === 'PAIR_OWN') {
+      const hc   = player.hand.find(c => c.id === action.handCardId);
+      const last = player.slots.at(-1);
+      if (!hc || !last) return null;
+      return { type: 'PAIR_OWN', actorName: player.name, cards: [last.cards.at(-1), hc] };
+    }
+    if (action.type === 'STEAL') {
+      const hc     = player.hand.find(c => c.id === action.handCardId);
+      const target = room.getPlayer(action.targetPlayerId);
+      const last   = target?.slots.at(-1);
+      if (!hc || !last) return null;
+      return { type: 'STEAL', actorName: player.name, targetName: target.name, cards: [last.cards.at(-1), hc] };
+    }
+  } catch (_) {}
+  return null;
+}
+
 function handlePlayerLeave(socketId, roomId) {
   const room = rooms.get(roomId);
   if (!room) return;
@@ -83,8 +112,10 @@ function scheduleBotMove(room) {
     try {
       const action = room.botMove();
       if (!action) return;
+      const animData = captureAnimData(room, current.id, action);
       room.handleAction(current.id, action);
       room.lastActivity = Date.now();
+      if (animData) io.to(room.id).emit('action_anim', animData);
       broadcast(room);
       if (room.phase === 'finished') {
         const hallOfFame = recordGameScores(room.players);
@@ -94,7 +125,7 @@ function scheduleBotMove(room) {
     } catch (e) {
       console.error('bot move error:', e.message);
     }
-  }, 750);
+  }, 1800);
 }
 
 // ── Highscore persistence ──────────────────────────────────────────────────
@@ -305,8 +336,10 @@ io.on('connection', socket => {
     try {
       const room = rooms.get(socket.data.roomId);
       if (!room) throw new Error('Not in a room');
+      const animData = captureAnimData(room, socket.id, action);
       room.handleAction(socket.id, action);
       room.lastActivity = Date.now();
+      if (animData) io.to(room.id).emit('action_anim', animData);
       broadcast(room);
       scheduleBotMove(room); // no-op for multiplayer; fires for vs-bot games
 

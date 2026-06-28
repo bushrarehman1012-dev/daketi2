@@ -278,11 +278,13 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
   const [chatOpen,   setChatOpen]  = useState(false);
   const [unreadChat, setUnreadChat] = useState(0);
   const [hintToast,  setHintToast] = useState('');
+  const [pairAnim,   setPairAnim]  = useState(null);
 
   const prevHandRef    = useRef([]);
   const hintTimerRef     = useRef(null);
   const feedbackTimerRef = useRef(null);
   const errTimerRef      = useRef(null);
+  const animTimerRef     = useRef([]);
   const prevMsgCount     = useRef(0);
   const prevStateRef     = useRef(null);
   const gameOverSfxDone  = useRef(false);
@@ -353,6 +355,21 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
     prevStateRef.current = state;
   }, [state, myId]);
 
+  useEffect(() => {
+    function onActionAnim(data) {
+      animTimerRef.current.forEach(clearTimeout);
+      setPairAnim({ ...data, phase: 'in' });
+      const t1 = setTimeout(() => setPairAnim(prev => prev ? { ...prev, phase: 'out' } : null), 1300);
+      const t2 = setTimeout(() => setPairAnim(null), 1750);
+      animTimerRef.current = [t1, t2];
+    }
+    socket.on('action_anim', onActionAnim);
+    return () => {
+      socket.off('action_anim', onActionAnim);
+      animTimerRef.current.forEach(clearTimeout);
+    };
+  }, []);
+
   function showFeedback(msg) {
     clearTimeout(feedbackTimerRef.current);
     setFeedback(msg);
@@ -402,6 +419,26 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
   return (
     <div className="g-root">
       <AchievementToast toasts={ach.toasts} />
+
+      {/* ── Pair / steal animation overlay ──────────────────────────────── */}
+      {pairAnim && (
+        <div className={`pair-anim-overlay${pairAnim.phase === 'out' ? ' pair-anim-overlay--out' : ''}`}>
+          <div className={`pair-anim-box${pairAnim.type === 'STEAL' ? ' pair-anim-box--steal' : ''}`}>
+            <div className="pair-anim-label">
+              {pairAnim.type === 'STEAL'
+                ? `${pairAnim.actorName} stole from ${pairAnim.targetName}!`
+                : `${pairAnim.actorName} paired!`}
+            </div>
+            <div className="pair-anim-cards">
+              {pairAnim.cards.map((card, i) => (
+                <div key={i} className="pair-anim-card-wrap">
+                  <TableCard card={card} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Top bar ─────────────────────────────────────────────────────── */}
       <header className="g-bar">

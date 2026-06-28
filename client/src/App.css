@@ -1054,6 +1054,75 @@ body {
 }
 
 /* ═══════════════════════════════════════
+   PAIR / STEAL ANIMATION OVERLAY
+═══════════════════════════════════════ */
+.pair-anim-overlay {
+  position: fixed; inset: 0; z-index: 900;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+  animation: pairBdIn .22s ease forwards;
+}
+.pair-anim-overlay--out {
+  animation: pairBdOut .42s ease forwards;
+}
+.pair-anim-box {
+  display: flex; flex-direction: column; align-items: center; gap: .85rem;
+  padding: 1.4rem 2.2rem 1.7rem;
+  background: linear-gradient(160deg, rgba(10,20,52,.97), rgba(4,8,28,.98));
+  border: 1px solid rgba(212,175,55,.45);
+  border-radius: 20px;
+  box-shadow: 0 0 0 1px rgba(212,175,55,.12),
+              0 0 55px rgba(212,175,55,.16),
+              0 24px 70px rgba(0,0,0,.75);
+  animation: pairBoxIn .42s cubic-bezier(0.34,1.56,0.64,1) forwards;
+}
+.pair-anim-overlay--out .pair-anim-box {
+  animation: pairBoxOut .38s ease forwards;
+}
+.pair-anim-box--steal {
+  border-color: rgba(220,60,60,.55);
+  box-shadow: 0 0 0 1px rgba(200,30,30,.18),
+              0 0 55px rgba(200,30,30,.2),
+              0 24px 70px rgba(0,0,0,.75);
+}
+.pair-anim-label {
+  font-family: 'Cinzel', serif;
+  font-size: var(--fs-sm); font-weight: var(--fw-bold);
+  color: var(--gold); letter-spacing: .08em; text-align: center;
+  text-shadow: 0 0 22px rgba(212,175,55,.55);
+}
+.pair-anim-box--steal .pair-anim-label {
+  color: #ff8888;
+  text-shadow: 0 0 22px rgba(220,60,60,.55);
+}
+.pair-anim-cards {
+  display: flex; gap: .6rem; align-items: center;
+}
+/* Card wrapper: padding makes room for the 1.5× scaled tc card */
+.pair-anim-card-wrap {
+  padding: 18px 12px;
+  filter: drop-shadow(0 0 18px rgba(212,175,55,.65));
+}
+.pair-anim-card-wrap .tc {
+  transform: scale(1.5);
+  display: block;
+}
+.pair-anim-box--steal .pair-anim-card-wrap {
+  filter: drop-shadow(0 0 18px rgba(220,60,60,.6));
+}
+
+@keyframes pairBdIn  { from { background: rgba(0,0,0,0); } to { background: rgba(0,0,0,.55); } }
+@keyframes pairBdOut { from { background: rgba(0,0,0,.55); } to { background: rgba(0,0,0,0); } }
+@keyframes pairBoxIn {
+  from { opacity: 0; transform: scale(.3) translateY(28px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes pairBoxOut {
+  from { opacity: 1; transform: scale(1) translateY(0); }
+  to   { opacity: 0; transform: scale(.65) translateY(-20px); }
+}
+
+/* ═══════════════════════════════════════
    CHAT SIDEBAR
 ═══════════════════════════════════════ */
 .chat-panel {
