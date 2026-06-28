@@ -1054,72 +1054,82 @@ body {
 }
 
 /* ═══════════════════════════════════════
-   PAIR / STEAL ANIMATION OVERLAY
+   PAIR / STEAL CARD FLIGHT ANIMATION
+   — no box, no background —
+   cards rise from below center, hold, then fly to opponent area
 ═══════════════════════════════════════ */
-.pair-anim-overlay {
-  position: fixed; inset: 0; z-index: 900;
-  display: flex; align-items: center; justify-content: center;
-  pointer-events: none;
-  animation: pairBdIn .22s ease forwards;
-}
-.pair-anim-overlay--out {
-  animation: pairBdOut .42s ease forwards;
-}
-.pair-anim-box {
-  display: flex; flex-direction: column; align-items: center; gap: .85rem;
-  padding: 1.4rem 2.2rem 1.7rem;
-  background: linear-gradient(160deg, rgba(10,20,52,.97), rgba(4,8,28,.98));
-  border: 1px solid rgba(212,175,55,.45);
-  border-radius: 20px;
-  box-shadow: 0 0 0 1px rgba(212,175,55,.12),
-              0 0 55px rgba(212,175,55,.16),
-              0 24px 70px rgba(0,0,0,.75);
-  animation: pairBoxIn .42s cubic-bezier(0.34,1.56,0.64,1) forwards;
-}
-.pair-anim-overlay--out .pair-anim-box {
-  animation: pairBoxOut .38s ease forwards;
-}
-.pair-anim-box--steal {
-  border-color: rgba(220,60,60,.55);
-  box-shadow: 0 0 0 1px rgba(200,30,30,.18),
-              0 0 55px rgba(200,30,30,.2),
-              0 24px 70px rgba(0,0,0,.75);
-}
-.pair-anim-label {
-  font-family: 'Cinzel', serif;
-  font-size: var(--fs-sm); font-weight: var(--fw-bold);
-  color: var(--gold); letter-spacing: .08em; text-align: center;
-  text-shadow: 0 0 22px rgba(212,175,55,.55);
-}
-.pair-anim-box--steal .pair-anim-label {
-  color: #ff8888;
-  text-shadow: 0 0 22px rgba(220,60,60,.55);
-}
-.pair-anim-cards {
-  display: flex; gap: .6rem; align-items: center;
-}
-/* Card wrapper: padding makes room for the 1.5× scaled tc card */
-.pair-anim-card-wrap {
-  padding: 18px 12px;
-  filter: drop-shadow(0 0 18px rgba(212,175,55,.65));
-}
-.pair-anim-card-wrap .tc {
-  transform: scale(1.5);
-  display: block;
-}
-.pair-anim-box--steal .pair-anim-card-wrap {
-  filter: drop-shadow(0 0 18px rgba(220,60,60,.6));
+
+/* Column wrapper: fixed + centered; the entire thing flies up */
+.pair-fly {
+  position: fixed;
+  top: 50%; left: 50%;
+  display: flex; flex-direction: column; align-items: center; gap: .55rem;
+  pointer-events: none; z-index: 900;
+  animation: pairFlyUp 1.8s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
 }
 
-@keyframes pairBdIn  { from { background: rgba(0,0,0,0); } to { background: rgba(0,0,0,.55); } }
-@keyframes pairBdOut { from { background: rgba(0,0,0,.55); } to { background: rgba(0,0,0,0); } }
-@keyframes pairBoxIn {
-  from { opacity: 0; transform: scale(.3) translateY(28px); }
-  to   { opacity: 1; transform: scale(1) translateY(0); }
+/* Cards row */
+.pair-fly-cards {
+  display: flex; gap: .7rem; align-items: center;
 }
-@keyframes pairBoxOut {
-  from { opacity: 1; transform: scale(1) translateY(0); }
-  to   { opacity: 0; transform: scale(.65) translateY(-20px); }
+
+/* Individual card — padding accommodates 1.4× scaled .tc */
+.pair-fly-card {
+  padding: 16px 10px;
+  filter: drop-shadow(0 0 22px rgba(212,175,55,.8))
+          drop-shadow(0 4px 16px rgba(0,0,0,.65));
+}
+.pair-fly-card .tc { transform: scale(1.4); display: block; }
+
+/* Opposing tilts — naturalise the flight */
+.pair-fly-card--0 { animation: tiltA 1.8s ease forwards; }
+.pair-fly-card--1 { animation: tiltB 1.8s ease forwards; }
+
+/* Steal variant: red glow */
+.pair-fly--steal .pair-fly-card {
+  filter: drop-shadow(0 0 22px rgba(220,50,50,.9))
+          drop-shadow(0 4px 16px rgba(0,0,0,.65));
+}
+
+/* "STOLEN" whisper — pure text, no box */
+.pair-fly-stolen {
+  font-family: 'Cinzel', serif;
+  font-size: var(--fs-xs); font-weight: var(--fw-black);
+  letter-spacing: .22em; color: #ff5555;
+  text-shadow: 0 0 14px rgba(220,50,50,.8);
+  animation: stolenFade 1.8s ease forwards;
+}
+
+/* Main flight keyframe */
+@keyframes pairFlyUp {
+  0%   { opacity: 0; transform: translate(-50%, calc(-50% + 90px)) scale(0.5); }
+  13%  { opacity: 1; transform: translate(-50%, calc(-50% + 4px))  scale(1.1); }
+  25%  { opacity: 1; transform: translate(-50%, -50%)              scale(1.0); }
+  62%  { opacity: 1; transform: translate(-50%, -50%)              scale(1.0); }
+  100% { opacity: 0; transform: translate(-50%, calc(-50% - 60vh)) scale(0.35); }
+}
+
+/* Card tilt keyframes — straighten mid-flight, lean on ascent */
+@keyframes tiltA {
+  0%   { transform: scale(1.4) rotate(-9deg); }
+  25%  { transform: scale(1.4) rotate(0deg); }
+  62%  { transform: scale(1.4) rotate(0deg); }
+  100% { transform: scale(1.2) rotate(-4deg); }
+}
+@keyframes tiltB {
+  0%   { transform: scale(1.4) rotate(9deg); }
+  25%  { transform: scale(1.4) rotate(0deg); }
+  62%  { transform: scale(1.4) rotate(0deg); }
+  100% { transform: scale(1.2) rotate(4deg); }
+}
+
+/* STOLEN text fade */
+@keyframes stolenFade {
+  0%   { opacity: 0; }
+  18%  { opacity: 1; }
+  55%  { opacity: 1; }
+  80%  { opacity: 0; }
+  100% { opacity: 0; }
 }
 
 /* ═══════════════════════════════════════

@@ -358,10 +358,9 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
   useEffect(() => {
     function onActionAnim(data) {
       animTimerRef.current.forEach(clearTimeout);
-      setPairAnim({ ...data, phase: 'in' });
-      const t1 = setTimeout(() => setPairAnim(prev => prev ? { ...prev, phase: 'out' } : null), 1300);
-      const t2 = setTimeout(() => setPairAnim(null), 1750);
-      animTimerRef.current = [t1, t2];
+      setPairAnim(data);
+      const t = setTimeout(() => setPairAnim(null), 1850);
+      animTimerRef.current = [t];
     }
     socket.on('action_anim', onActionAnim);
     return () => {
@@ -420,23 +419,19 @@ export default function Game({ state, myId, chatMessages, highscores, onLeave })
     <div className="g-root">
       <AchievementToast toasts={ach.toasts} />
 
-      {/* ── Pair / steal animation overlay ──────────────────────────────── */}
+      {/* ── Pair / steal card travel animation ──────────────────────────── */}
       {pairAnim && (
-        <div className={`pair-anim-overlay${pairAnim.phase === 'out' ? ' pair-anim-overlay--out' : ''}`}>
-          <div className={`pair-anim-box${pairAnim.type === 'STEAL' ? ' pair-anim-box--steal' : ''}`}>
-            <div className="pair-anim-label">
-              {pairAnim.type === 'STEAL'
-                ? `${pairAnim.actorName} stole from ${pairAnim.targetName}!`
-                : `${pairAnim.actorName} paired!`}
-            </div>
-            <div className="pair-anim-cards">
-              {pairAnim.cards.map((card, i) => (
-                <div key={i} className="pair-anim-card-wrap">
-                  <TableCard card={card} />
-                </div>
-              ))}
-            </div>
+        <div className={`pair-fly${pairAnim.type === 'STEAL' ? ' pair-fly--steal' : ''}`}>
+          <div className="pair-fly-cards">
+            {pairAnim.cards.map((card, i) => (
+              <div key={i} className={`pair-fly-card pair-fly-card--${i}`}>
+                <TableCard card={card} />
+              </div>
+            ))}
           </div>
+          {pairAnim.type === 'STEAL' && (
+            <div className="pair-fly-stolen">STOLEN</div>
+          )}
         </div>
       )}
 

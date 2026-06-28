@@ -339,7 +339,8 @@ io.on('connection', socket => {
       const animData = captureAnimData(room, socket.id, action);
       room.handleAction(socket.id, action);
       room.lastActivity = Date.now();
-      if (animData) io.to(room.id).emit('action_anim', animData);
+      // Send only to OTHER players — actor doesn't see their own pairs
+      if (animData) socket.to(room.id).emit('action_anim', animData);
       broadcast(room);
       scheduleBotMove(room); // no-op for multiplayer; fires for vs-bot games
 
